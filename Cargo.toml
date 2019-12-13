@@ -1,5 +1,5 @@
 [package]
-name = "epaxos"
+name = "epaxos_rs"
 version = "0.1.0"
 authors = ["Pi Songkuntham <pisong@princeton.edu>"]
 license = "MIT"
@@ -7,22 +7,15 @@ description = "A Rust implementation of EPaxos"
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0" }
-tarpc = { version = "0.16.0"}
-tarpc-bincode-transport = "0.7.0"
-tokio-serde = { version = "0.6", features = ["json"] }
-tokio = { version = "0.2", features = ["full"] }
-clap = "2.0"
-futures = "0.3"
+grpc            = "0.6.1"
+protobuf        = "~2"
+protoc-rust = "2.8.1"
+futures         = "0.3.1"
+futures-cpupool = "~0.1"
 
-[lib]
-name = "service"
-path = "src/lib.rs"
+[build-dependencies]
+protoc-rust-grpc = "0.6.1"
 
 [[bin]]
 name = "server"
 path = "src/server.rs"
-
-[[bin]]
-name = "client"
-path = "src/client.rs"

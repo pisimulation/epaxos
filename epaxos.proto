@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package epaxos;
+
+service Epaxos {
+    rpc write(WriteRequest) returns (WriteResponse);
+    rpc read(ReadRequest) returns (ReadResponse);
+}
+
+message WriteRequest {
+    string key = 1;
+    int32 value = 2;
+}
+
+message WriteResponse {
+    bool ack = 1;
+}
+
+message ReadRequest {
+    string key = 1;
+}
+
+message ReadResponse {
+    int32 value = 1;
+}
