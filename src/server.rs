@@ -11,7 +11,6 @@ use epaxos_rs::epaxos_grpc::*;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
-    thread,
 };
 
 #[derive(Clone)]
@@ -58,4 +57,10 @@ impl Epaxos for EpaxosService {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut server_builder = grpc::ServerBuilder::new_plain();
+    server_builder.add_service(EpaxosServer::new_service_def(EpaxosService::new_store()));
+    server_builder.http.set_port(8080);
+    let server = server_builder.build().expect("build");
+    println!("server stared on addr {}", server.local_addr());
+}
