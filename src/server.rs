@@ -8,17 +8,23 @@ extern crate protobuf;
 //use clap::{App, Arg};
 use epaxos_rs::epaxos::*;
 use epaxos_rs::epaxos_grpc::*;
-use std::{collections::HashMap, thread};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    thread,
+};
 
 #[derive(Clone)]
 struct EpaxosService {
-    store: HashMap<String, i32>,
+    // In grpc, parameters in service are immutable.
+    // See https://github.com/stepancheg/grpc-rust/blob/master/docs/FAQ.md
+    store: Arc<Mutex<HashMap<String, i32>>>,
 }
 
 impl EpaxosService {
     fn new_store() -> EpaxosService {
         EpaxosService {
-            store: HashMap::new(),
+            store: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
@@ -36,7 +42,7 @@ impl Epaxos for EpaxosService {
             req.get_key(),
             req.get_value()
         );
-        self.store.insert(req.get_key().to_owned(), req.get_value());
+        (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
 
         r.set_ack(true);
         grpc::SingleResponse::completed(r)
@@ -47,8 +53,7 @@ impl Epaxos for EpaxosService {
         req: ReadRequest,
     ) -> grpc::SingleResponse<ReadResponse> {
         let mut r = ReadResponse::new();
-        let value = self.store.get(req.get_key());
-        r.set_value(*value.unwrap());
+        r.set_value(*((*self.store.lock().unwrap()).get(req.get_key())).unwrap());
         grpc::SingleResponse::completed(r)
     }
 }
