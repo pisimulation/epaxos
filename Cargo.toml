@@ -19,3 +19,7 @@ protoc-rust-grpc = "0.6.1"
 [[bin]]
 name = "server"
 path = "src/server.rs"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
