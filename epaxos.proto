@@ -2,7 +2,11 @@ syntax = "proto3";
 
 package epaxos;
 
-service Epaxos {
+/*
+*  Service for client
+*/
+
+service EpaxosService {
     rpc write(WriteRequest) returns (WriteResponse);
     rpc read(ReadRequest) returns (ReadResponse);
 }
@@ -22,4 +26,61 @@ message ReadRequest {
 
 message ReadResponse {
     int32 value = 1;
+}
+
+/*
+*  Service for server
+*/
+
+service EpaxosInternal {
+    rpc pre_accept(PreAccept) returns (PreAcceptOK);
+    rpc commit(Commit) returns (Empty);
+}
+
+message Command {
+    oneof ClientRequest {
+        WriteRequest write_req = 1;
+        ReadRequest read_req = 2;
+    }
+    int32 seq = 3;
+    repeated Command deps = 4;
+    oneof ReplicaMessage {
+        PreAccept pre_accept = 5;
+        PreAcceptOK pre_accept_ok = 6;
+        Commit commit = 7;
+    }
+}
+
+message PreAccept {
+    oneof ClientRequest {
+        WriteRequest write_req = 1;
+        ReadRequest read_req = 2;
+    }
+    int32 seq = 3;
+    repeated Command deps = 4;
+    int32 instance_number = 5;
+}
+
+message PreAcceptOK {
+    oneof ClientRequest {
+        WriteRequest write_req = 1;
+        ReadRequest read_req = 2;
+    }
+    int32 seq = 3;
+    repeated Command deps = 4;
+    int32 instance_number = 5;
+}
+
+message Commit {
+    oneof ClientRequest {
+        WriteRequest write_req = 1;
+        ReadRequest read_req = 2;
+    }
+    int32 seq = 3;
+    repeated Command deps = 4;
+    int32 instance_number = 5;
+}
+
+message Empty {
+
 }

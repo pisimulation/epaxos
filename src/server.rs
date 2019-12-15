@@ -14,72 +14,20 @@ use std::{
     thread,
 };
 
-type Dependencies = Arc<Mutex<HashSet<Command>>>;
-
-enum ReplicaMessage {
-    PreAccept,
-    PreAcceptOK,
-    Accept,
-    AcceptOK,
-    Commit,
-}
-
-struct PreAccept {
-    client_req: ClientReq,
-    seq: i32,
-    deps: Dependencies,
-    instance_number: i32,
-}
-
-struct PreAcceptOK {
-    client_req: ClientReq,
-    seq: i32,
-    deps: Dependencies,
-    instance_number: i32,
-}
-
-struct Commit {
-    client_req: ClientReq,
-    seq: i32,
-    deps: Dependencies,
-    instance_number: i32,
-}
-
-struct ReadReq {
-    key: String,
-}
-
-struct WriteReq {
-    key: String,
-    value: i32,
-}
-
-enum ClientReq {
-    ReadReq,
-    WriteReq,
-}
-
-struct Command {
-    client_req: ClientReq,
-    seq: i32,
-    deps: Dependencies,
-    replica_msg: ReplicaMessage,
-}
-
 #[derive(Clone)]
-struct EpaxosService {
+struct EpaxosServiceInit {
     // In grpc, parameters in service are immutable.
     // See https://github.com/stepancheg/grpc-rust/blob/master/docs/FAQ.md
     store: Arc<Mutex<HashMap<String, i32>>>,
-    cmds: Arc<Mutex<Vec<Vec<Command>>>>, // vectors are growable arrays
+    // cmds: Arc<Mutex<Vec<Vec<Command>>>>, // vectors are growable arrays
     instance_number: Arc<Mutex<i32>>,
 }
 
-impl EpaxosService {
-    fn init() -> EpaxosService {
-        EpaxosService {
+impl EpaxosServiceInit {
+    fn init() -> EpaxosServiceInit {
+        EpaxosServiceInit {
             store: Arc::new(Mutex::new(HashMap::new())),
-            cmds: Arc::new(Mutex::new(Vec::new())),
+            //    cmds: Arc::new(Mutex::new(Vec::new())),
             instance_number: Arc::new(Mutex::new(0)),
         }
     }
@@ -89,7 +37,7 @@ impl EpaxosService {
     fn consensus() {}
 }
 
-impl Epaxos for EpaxosService {
+impl EpaxosService for EpaxosServiceInit {
     fn write(
         &self,
         _m: grpc::RequestOptions,
@@ -124,7 +72,9 @@ impl Epaxos for EpaxosService {
 
 fn main() {
     let mut server_builder = grpc::ServerBuilder::new_plain();
-    server_builder.add_service(EpaxosServer::new_service_def(EpaxosService::init()));
+    server_builder.add_service(EpaxosServiceServer::new_service_def(
+        EpaxosServiceInit::init(),
+    ));
     server_builder.http.set_port(8080);
     let server = server_builder.build().expect("build");
     println!("server stared on addr {}", server.local_addr());
