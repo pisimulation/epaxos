@@ -1,0 +1,1 @@
+/Users/pisong/epaxos/target/debug/client2: /Users/pisong/epaxos/build.rs /Users/pisong/epaxos/src/client2.rs /Users/pisong/epaxos/src/epaxos.rs /Users/pisong/epaxos/src/epaxos_grpc.rs /Users/pisong/epaxos/src/lib.rs
