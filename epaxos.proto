@@ -2,13 +2,11 @@ syntax = "proto3";
 
 package epaxos;
 
-/*
-*  Service for client
-*/
-
 service EpaxosService {
     rpc write(WriteRequest) returns (WriteResponse);
     rpc read(ReadRequest) returns (ReadResponse);
+    rpc pre_accept(PreAccept) returns (PreAcceptOK);
+    rpc commit(Commit) returns (Empty);
 }
 
 message WriteRequest {
@@ -26,15 +24,6 @@ message ReadRequest {
 
 message ReadResponse {
     int32 value = 1;
-}
-
-/*
-*  Service for server
-*/
-
-service EpaxosInternal {
-    rpc pre_accept(PreAccept) returns (PreAcceptOK);
-    rpc commit(Commit) returns (Empty);
 }
 
 message Command {

@@ -2733,11 +2733,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     eadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\x05R\x03seq\
     \x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\
     \x0finstance_number\x18\x05\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClie\
-    ntRequest\"\x07\n\x05Empty2x\n\rEpaxosService\x124\n\x05write\x12\x14.ep\
-    axos.WriteRequest\x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\x13.ep\
-    axos.ReadRequest\x1a\x14.epaxos.ReadResponse2o\n\x0eEpaxosInternal\x124\
-    \n\npre_accept\x12\x11.epaxos.PreAccept\x1a\x13.epaxos.PreAcceptOK\x12'\
-    \n\x06commit\x12\x0e.epaxos.Commit\x1a\r.epaxos.Emptyb\x06proto3\
+    ntRequest\"\x07\n\x05Empty2\xd7\x01\n\rEpaxosService\x124\n\x05write\x12\
+    \x14.epaxos.WriteRequest\x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\
+    \x13.epaxos.ReadRequest\x1a\x14.epaxos.ReadResponse\x124\n\npre_accept\
+    \x12\x11.epaxos.PreAccept\x1a\x13.epaxos.PreAcceptOK\x12'\n\x06commit\
+    \x12\x0e.epaxos.Commit\x1a\r.epaxos.Emptyb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
