@@ -55,9 +55,24 @@ impl Epaxos {
         };
     }
 
-    fn replica_handler() {}
+    fn replica_handler() {
+        println!("PIPI replica hander");
+    }
 
-    fn consensus() {}
+    fn consensus(&self, write_req: &WriteRequest) {
+        for i in 0..2 {
+            let mut pre_accept_msg = PreAccept::new();
+            pre_accept_msg.set_instance_number(*self.instance_number.lock().unwrap());
+            pre_accept_msg.set_write_req(write_req.clone());
+            (*self.replicas.lock().unwrap())[i]
+                .pre_accept(grpc::RequestOptions::new(), pre_accept_msg);
+            println!("replicaaaaa");
+        }
+        // for replica in *self.replicas.lock().unwrap() {
+        //     println!("replica");
+        // }
+        println!("PIPI consensus");
+    }
 }
 
 impl EpaxosService for Epaxos {
@@ -67,6 +82,8 @@ impl EpaxosService for Epaxos {
         req: WriteRequest,
     ) -> grpc::SingleResponse<WriteResponse> {
         // TODO: do consensus before committing
+        //(*self.replicas.lock().unwrap())[0].pre_accept();
+        self.consensus(&req);
 
         let mut r = WriteResponse::new();
 
@@ -96,7 +113,10 @@ impl EpaxosService for Epaxos {
         o: grpc::RequestOptions,
         pre_accept_msg: PreAccept,
     ) -> grpc::SingleResponse<PreAcceptOK> {
+        println!("PIPI preaccept");
         let mut r = PreAcceptOK::new();
+        let mut key = pre_accept_msg.get_write_req().get_key();
+        println!("PIPIPIPIPI KEY: {}", key);
         return grpc::SingleResponse::completed(r);
     }
     fn commit(&self, o: grpc::RequestOptions, commit_msg: Commit) -> grpc::SingleResponse<Empty> {
@@ -118,11 +138,11 @@ fn main() {
     let server2 = server_builder2.build().expect("build");
     println!("server 2 started on addr {}", server2.local_addr());
 
-    let mut server_builder3 = grpc::ServerBuilder::new_plain();
-    server_builder3.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
-    server_builder3.http.set_port(REPLICA3_PORT);
-    let server3 = server_builder3.build().expect("build");
-    println!("server 3 started on addr {}", server3.local_addr());
+    // let mut server_builder3 = grpc::ServerBuilder::new_plain();
+    // server_builder3.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
+    // server_builder3.http.set_port(REPLICA3_PORT);
+    // let server3 = server_builder3.build().expect("build");
+    // println!("server 3 started on addr {}", server3.local_addr());
     loop {
         thread::park();
     }
