@@ -1,1 +1,0 @@
-{"rustc":6484268071756738333,"features":"[\"default\", \"use_std\"]","target":9298387729873864566,"profile":14672114853574311971,"path":15945143189529242195,"deps":[[12959272399517362647,"log",false,17959757347257730896]],"local":[{"CheckDepInfo":{"dep_info":"debug/.fingerprint/log-605869f7e58159d2/dep-lib-log-605869f7e58159d2"}}],"rustflags":[],"metadata":11622444542196388843}

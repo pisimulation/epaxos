@@ -143,9 +143,9 @@ fn main() {
     // server_builder3.http.set_port(REPLICA3_PORT);
     // let server3 = server_builder3.build().expect("build");
     // println!("server 3 started on addr {}", server3.local_addr());
-    loop {
-        thread::park();
-    }
+    // loop {
+    //     thread::park();
+    // }
 
     // TODO: handle replica msg here
 }
