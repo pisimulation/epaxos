@@ -11,6 +11,7 @@ use epaxos_rs::epaxos_grpc::*;
 use grpc::ClientStub;
 use std::{
     collections::{HashMap, HashSet},
+    env,
     sync::{Arc, Mutex},
     thread,
 };
@@ -60,7 +61,7 @@ impl Epaxos {
     }
 
     fn consensus(&self, write_req: &WriteRequest) {
-        for i in 0..2 {
+        for i in 0..3 {
             let mut pre_accept_msg = PreAccept::new();
             pre_accept_msg.set_instance_number(*self.instance_number.lock().unwrap());
             pre_accept_msg.set_write_req(write_req.clone());
@@ -126,26 +127,31 @@ impl EpaxosService for Epaxos {
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let port = &args[1];
     let mut server_builder1 = grpc::ServerBuilder::new_plain();
     server_builder1.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
-    server_builder1.http.set_port(REPLICA1_PORT);
+    server_builder1.http.set_port(port.parse().unwrap());
     let server1 = server_builder1.build().expect("build");
     println!("server 1 started on addr {}", server1.local_addr());
 
-    let mut server_builder2 = grpc::ServerBuilder::new_plain();
-    server_builder2.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
-    server_builder2.http.set_port(REPLICA2_PORT);
-    let server2 = server_builder2.build().expect("build");
-    println!("server 2 started on addr {}", server2.local_addr());
+    // let mut server_builder2 = grpc::ServerBuilder::new_plain();
+    // server_builder2.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
+    // server_builder2.http.set_port(REPLICA2_PORT);
+    // let server2 = server_builder2.build().expect("build");
+    // println!("server 2 started on addr {}", server2.local_addr());
 
     // let mut server_builder3 = grpc::ServerBuilder::new_plain();
     // server_builder3.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
     // server_builder3.http.set_port(REPLICA3_PORT);
     // let server3 = server_builder3.build().expect("build");
     // println!("server 3 started on addr {}", server3.local_addr());
-    // loop {
-    //     thread::park();
-    // }
+
+    // Blocks the main thread forever
+    loop {
+        thread::park();
+    }
 
     // TODO: handle replica msg here
 }

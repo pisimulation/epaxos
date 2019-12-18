@@ -730,7 +730,6 @@ pub struct Command {
     pub deps: ::protobuf::RepeatedField<Command>,
     // message oneof groups
     pub ClientRequest: ::std::option::Option<Command_oneof_ClientRequest>,
-    pub ReplicaMessage: ::std::option::Option<Command_oneof_ReplicaMessage>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -746,10 +745,6 @@ impl<'a> ::std::default::Default for &'a Command {
 pub enum Command_oneof_ClientRequest {
     write_req(WriteRequest),
     read_req(ReadRequest),
-}
-
-#[derive(Clone,PartialEq,Debug)]
-pub enum Command_oneof_ReplicaMessage {
     pre_accept(PreAccept),
     pre_accept_ok(PreAcceptOK),
     commit(Commit),
@@ -858,6 +853,153 @@ impl Command {
         }
     }
 
+    // .epaxos.PreAccept pre_accept = 5;
+
+
+    pub fn get_pre_accept(&self) -> &PreAccept {
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(ref v)) => v,
+            _ => PreAccept::default_instance(),
+        }
+    }
+    pub fn clear_pre_accept(&mut self) {
+        self.ClientRequest = ::std::option::Option::None;
+    }
+
+    pub fn has_pre_accept(&self) -> bool {
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pre_accept(&mut self, v: PreAccept) {
+        self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_pre_accept(&mut self) -> &mut PreAccept {
+        if let ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(_)) = self.ClientRequest {
+        } else {
+            self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(PreAccept::new()));
+        }
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_pre_accept(&mut self) -> PreAccept {
+        if self.has_pre_accept() {
+            match self.ClientRequest.take() {
+                ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            PreAccept::new()
+        }
+    }
+
+    // .epaxos.PreAcceptOK pre_accept_ok = 6;
+
+
+    pub fn get_pre_accept_ok(&self) -> &PreAcceptOK {
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(ref v)) => v,
+            _ => PreAcceptOK::default_instance(),
+        }
+    }
+    pub fn clear_pre_accept_ok(&mut self) {
+        self.ClientRequest = ::std::option::Option::None;
+    }
+
+    pub fn has_pre_accept_ok(&self) -> bool {
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pre_accept_ok(&mut self, v: PreAcceptOK) {
+        self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_pre_accept_ok(&mut self) -> &mut PreAcceptOK {
+        if let ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(_)) = self.ClientRequest {
+        } else {
+            self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(PreAcceptOK::new()));
+        }
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_pre_accept_ok(&mut self) -> PreAcceptOK {
+        if self.has_pre_accept_ok() {
+            match self.ClientRequest.take() {
+                ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            PreAcceptOK::new()
+        }
+    }
+
+    // .epaxos.Commit commit = 7;
+
+
+    pub fn get_commit(&self) -> &Commit {
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::commit(ref v)) => v,
+            _ => Commit::default_instance(),
+        }
+    }
+    pub fn clear_commit(&mut self) {
+        self.ClientRequest = ::std::option::Option::None;
+    }
+
+    pub fn has_commit(&self) -> bool {
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::commit(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_commit(&mut self, v: Commit) {
+        self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::commit(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_commit(&mut self) -> &mut Commit {
+        if let ::std::option::Option::Some(Command_oneof_ClientRequest::commit(_)) = self.ClientRequest {
+        } else {
+            self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::commit(Commit::new()));
+        }
+        match self.ClientRequest {
+            ::std::option::Option::Some(Command_oneof_ClientRequest::commit(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_commit(&mut self) -> Commit {
+        if self.has_commit() {
+            match self.ClientRequest.take() {
+                ::std::option::Option::Some(Command_oneof_ClientRequest::commit(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            Commit::new()
+        }
+    }
+
     // int32 seq = 3;
 
 
@@ -897,153 +1039,6 @@ impl Command {
     pub fn take_deps(&mut self) -> ::protobuf::RepeatedField<Command> {
         ::std::mem::replace(&mut self.deps, ::protobuf::RepeatedField::new())
     }
-
-    // .epaxos.PreAccept pre_accept = 5;
-
-
-    pub fn get_pre_accept(&self) -> &PreAccept {
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(ref v)) => v,
-            _ => PreAccept::default_instance(),
-        }
-    }
-    pub fn clear_pre_accept(&mut self) {
-        self.ReplicaMessage = ::std::option::Option::None;
-    }
-
-    pub fn has_pre_accept(&self) -> bool {
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_pre_accept(&mut self, v: PreAccept) {
-        self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_pre_accept(&mut self) -> &mut PreAccept {
-        if let ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(_)) = self.ReplicaMessage {
-        } else {
-            self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(PreAccept::new()));
-        }
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_pre_accept(&mut self) -> PreAccept {
-        if self.has_pre_accept() {
-            match self.ReplicaMessage.take() {
-                ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            PreAccept::new()
-        }
-    }
-
-    // .epaxos.PreAcceptOK pre_accept_ok = 6;
-
-
-    pub fn get_pre_accept_ok(&self) -> &PreAcceptOK {
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(ref v)) => v,
-            _ => PreAcceptOK::default_instance(),
-        }
-    }
-    pub fn clear_pre_accept_ok(&mut self) {
-        self.ReplicaMessage = ::std::option::Option::None;
-    }
-
-    pub fn has_pre_accept_ok(&self) -> bool {
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_pre_accept_ok(&mut self, v: PreAcceptOK) {
-        self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_pre_accept_ok(&mut self) -> &mut PreAcceptOK {
-        if let ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(_)) = self.ReplicaMessage {
-        } else {
-            self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(PreAcceptOK::new()));
-        }
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_pre_accept_ok(&mut self) -> PreAcceptOK {
-        if self.has_pre_accept_ok() {
-            match self.ReplicaMessage.take() {
-                ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            PreAcceptOK::new()
-        }
-    }
-
-    // .epaxos.Commit commit = 7;
-
-
-    pub fn get_commit(&self) -> &Commit {
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(ref v)) => v,
-            _ => Commit::default_instance(),
-        }
-    }
-    pub fn clear_commit(&mut self) {
-        self.ReplicaMessage = ::std::option::Option::None;
-    }
-
-    pub fn has_commit(&self) -> bool {
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_commit(&mut self, v: Commit) {
-        self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_commit(&mut self) -> &mut Commit {
-        if let ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(_)) = self.ReplicaMessage {
-        } else {
-            self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(Commit::new()));
-        }
-        match self.ReplicaMessage {
-            ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_commit(&mut self) -> Commit {
-        if self.has_commit() {
-            match self.ReplicaMessage.take() {
-                ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            Commit::new()
-        }
-    }
 }
 
 impl ::protobuf::Message for Command {
@@ -1058,26 +1053,26 @@ impl ::protobuf::Message for Command {
                 return false;
             }
         }
+        if let Some(Command_oneof_ClientRequest::pre_accept(ref v)) = self.ClientRequest {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
+        if let Some(Command_oneof_ClientRequest::pre_accept_ok(ref v)) = self.ClientRequest {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
+        if let Some(Command_oneof_ClientRequest::commit(ref v)) = self.ClientRequest {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
         for v in &self.deps {
             if !v.is_initialized() {
                 return false;
             }
         };
-        if let Some(Command_oneof_ReplicaMessage::pre_accept(ref v)) = self.ReplicaMessage {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        if let Some(Command_oneof_ReplicaMessage::pre_accept_ok(ref v)) = self.ReplicaMessage {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        if let Some(Command_oneof_ReplicaMessage::commit(ref v)) = self.ReplicaMessage {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
         true
     }
 
@@ -1097,6 +1092,24 @@ impl ::protobuf::Message for Command {
                     }
                     self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(is.read_message()?));
                 },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept(is.read_message()?));
+                },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::pre_accept_ok(is.read_message()?));
+                },
+                7 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::commit(is.read_message()?));
+                },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
@@ -1106,24 +1119,6 @@ impl ::protobuf::Message for Command {
                 },
                 4 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.deps)?;
-                },
-                5 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept(is.read_message()?));
-                },
-                6 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::pre_accept_ok(is.read_message()?));
-                },
-                7 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ReplicaMessage = ::std::option::Option::Some(Command_oneof_ReplicaMessage::commit(is.read_message()?));
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1154,19 +1149,15 @@ impl ::protobuf::Message for Command {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
-            };
-        }
-        if let ::std::option::Option::Some(ref v) = self.ReplicaMessage {
-            match v {
-                &Command_oneof_ReplicaMessage::pre_accept(ref v) => {
+                &Command_oneof_ClientRequest::pre_accept(ref v) => {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
-                &Command_oneof_ReplicaMessage::pre_accept_ok(ref v) => {
+                &Command_oneof_ClientRequest::pre_accept_ok(ref v) => {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
-                &Command_oneof_ReplicaMessage::commit(ref v) => {
+                &Command_oneof_ClientRequest::commit(ref v) => {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
@@ -1198,21 +1189,17 @@ impl ::protobuf::Message for Command {
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
                 },
-            };
-        }
-        if let ::std::option::Option::Some(ref v) = self.ReplicaMessage {
-            match v {
-                &Command_oneof_ReplicaMessage::pre_accept(ref v) => {
+                &Command_oneof_ClientRequest::pre_accept(ref v) => {
                     os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
                 },
-                &Command_oneof_ReplicaMessage::pre_accept_ok(ref v) => {
+                &Command_oneof_ClientRequest::pre_accept_ok(ref v) => {
                     os.write_tag(6, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
                 },
-                &Command_oneof_ReplicaMessage::commit(ref v) => {
+                &Command_oneof_ClientRequest::commit(ref v) => {
                     os.write_tag(7, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
@@ -1271,16 +1258,6 @@ impl ::protobuf::Message for Command {
                     Command::has_read_req,
                     Command::get_read_req,
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "seq",
-                    |m: &Command| { &m.seq },
-                    |m: &mut Command| { &mut m.seq },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Command>>(
-                    "deps",
-                    |m: &Command| { &m.deps },
-                    |m: &mut Command| { &mut m.deps },
-                ));
                 fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, PreAccept>(
                     "pre_accept",
                     Command::has_pre_accept,
@@ -1295,6 +1272,16 @@ impl ::protobuf::Message for Command {
                     "commit",
                     Command::has_commit,
                     Command::get_commit,
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                    "seq",
+                    |m: &Command| { &m.seq },
+                    |m: &mut Command| { &mut m.seq },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Command>>(
+                    "deps",
+                    |m: &Command| { &m.deps },
+                    |m: &mut Command| { &mut m.deps },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<Command>(
                     "Command",
@@ -1320,11 +1307,11 @@ impl ::protobuf::Clear for Command {
     fn clear(&mut self) {
         self.ClientRequest = ::std::option::Option::None;
         self.ClientRequest = ::std::option::Option::None;
+        self.ClientRequest = ::std::option::Option::None;
+        self.ClientRequest = ::std::option::Option::None;
+        self.ClientRequest = ::std::option::Option::None;
         self.seq = 0;
         self.deps.clear();
-        self.ReplicaMessage = ::std::option::Option::None;
-        self.ReplicaMessage = ::std::option::Option::None;
-        self.ReplicaMessage = ::std::option::Option::None;
         self.unknown_fields.clear();
     }
 }
@@ -2708,36 +2695,36 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x18\x01\x20\x01(\tR\x03key\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\x05\
     value\"!\n\rWriteResponse\x12\x10\n\x03ack\x18\x01\x20\x01(\x08R\x03ack\
     \"\x1f\n\x0bReadRequest\x12\x10\n\x03key\x18\x01\x20\x01(\tR\x03key\"$\n\
-    \x0cReadResponse\x12\x14\n\x05value\x18\x01\x20\x01(\x05R\x05value\"\xe3\
+    \x0cReadResponse\x12\x14\n\x05value\x18\x01\x20\x01(\x05R\x05value\"\xd1\
     \x02\n\x07Command\x123\n\twrite_req\x18\x01\x20\x01(\x0b2\x14.epaxos.Wri\
     teRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x02\x20\x01(\x0b2\x13.e\
-    paxos.ReadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\x05R\
-    \x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\
-    \x122\n\npre_accept\x18\x05\x20\x01(\x0b2\x11.epaxos.PreAcceptH\x01R\tpr\
-    eAccept\x129\n\rpre_accept_ok\x18\x06\x20\x01(\x0b2\x13.epaxos.PreAccept\
-    OKH\x01R\x0bpreAcceptOk\x12(\n\x06commit\x18\x07\x20\x01(\x0b2\x0e.epaxo\
-    s.CommitH\x01R\x06commitB\x0f\n\rClientRequestB\x10\n\x0eReplicaMessage\
-    \"\xe3\x01\n\tPreAccept\x123\n\twrite_req\x18\x01\x20\x01(\x0b2\x14.epax\
-    os.WriteRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x02\x20\x01(\x0b2\
+    paxos.ReadRequestH\0R\x07readReq\x122\n\npre_accept\x18\x05\x20\x01(\x0b\
+    2\x11.epaxos.PreAcceptH\0R\tpreAccept\x129\n\rpre_accept_ok\x18\x06\x20\
+    \x01(\x0b2\x13.epaxos.PreAcceptOKH\0R\x0bpreAcceptOk\x12(\n\x06commit\
+    \x18\x07\x20\x01(\x0b2\x0e.epaxos.CommitH\0R\x06commit\x12\x10\n\x03seq\
+    \x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.e\
+    paxos.CommandR\x04depsB\x0f\n\rClientRequest\"\xe3\x01\n\tPreAccept\x123\
+    \n\twrite_req\x18\x01\x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08write\
+    Req\x120\n\x08read_req\x18\x02\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\
+    \x07readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\
+    \x18\x04\x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_nu\
+    mber\x18\x05\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\xe5\
+    \x01\n\x0bPreAcceptOK\x123\n\twrite_req\x18\x01\x20\x01(\x0b2\x14.epaxos\
+    .WriteRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x02\x20\x01(\x0b2\
     \x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\
     \x05R\x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.epaxos.CommandR\
     \x04deps\x12'\n\x0finstance_number\x18\x05\x20\x01(\x05R\x0einstanceNumb\
-    erB\x0f\n\rClientRequest\"\xe5\x01\n\x0bPreAcceptOK\x123\n\twrite_req\
-    \x18\x01\x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\
-    \x08read_req\x18\x02\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\
-    \x12\x10\n\x03seq\x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x04\
-    \x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_number\x18\
-    \x05\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\xe0\x01\n\
-    \x06Commit\x123\n\twrite_req\x18\x01\x20\x01(\x0b2\x14.epaxos.WriteReque\
-    stH\0R\x08writeReq\x120\n\x08read_req\x18\x02\x20\x01(\x0b2\x13.epaxos.R\
-    eadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\x05R\x03seq\
-    \x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\
-    \x0finstance_number\x18\x05\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClie\
-    ntRequest\"\x07\n\x05Empty2\xd7\x01\n\rEpaxosService\x124\n\x05write\x12\
-    \x14.epaxos.WriteRequest\x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\
-    \x13.epaxos.ReadRequest\x1a\x14.epaxos.ReadResponse\x124\n\npre_accept\
-    \x12\x11.epaxos.PreAccept\x1a\x13.epaxos.PreAcceptOK\x12'\n\x06commit\
-    \x12\x0e.epaxos.Commit\x1a\r.epaxos.Emptyb\x06proto3\
+    erB\x0f\n\rClientRequest\"\xe0\x01\n\x06Commit\x123\n\twrite_req\x18\x01\
+    \x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\x08read_re\
+    q\x18\x02\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\
+    \x03seq\x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b\
+    2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_number\x18\x05\x20\x01(\
+    \x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\x07\n\x05Empty2\xd7\x01\
+    \n\rEpaxosService\x124\n\x05write\x12\x14.epaxos.WriteRequest\x1a\x15.ep\
+    axos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadRequest\x1a\x14.epa\
+    xos.ReadResponse\x124\n\npre_accept\x12\x11.epaxos.PreAccept\x1a\x13.epa\
+    xos.PreAcceptOK\x12'\n\x06commit\x12\x0e.epaxos.Commit\x1a\r.epaxos.Empt\
+    yb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
