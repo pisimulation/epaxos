@@ -1,11 +1,9 @@
-//extern crate clap;
 extern crate epaxos_rs;
 extern crate futures;
 extern crate futures_cpupool;
 extern crate grpc;
 extern crate protobuf;
 
-//use clap::{App, Arg};
 use epaxos_rs::epaxos::*;
 use epaxos_rs::epaxos_grpc::*;
 use grpc::ClientStub;
@@ -56,10 +54,6 @@ impl Epaxos {
         };
     }
 
-    fn replica_handler() {
-        println!("PIPI replica hander");
-    }
-
     fn consensus(&self, write_req: &WriteRequest) {
         for i in 0..3 {
             let mut pre_accept_msg = PreAccept::new();
@@ -69,9 +63,6 @@ impl Epaxos {
                 .pre_accept(grpc::RequestOptions::new(), pre_accept_msg);
             println!("replicaaaaa");
         }
-        // for replica in *self.replicas.lock().unwrap() {
-        //     println!("replica");
-        // }
         println!("PIPI consensus");
     }
 }
@@ -141,12 +132,6 @@ fn main() {
     // server_builder2.http.set_port(REPLICA2_PORT);
     // let server2 = server_builder2.build().expect("build");
     // println!("server 2 started on addr {}", server2.local_addr());
-
-    // let mut server_builder3 = grpc::ServerBuilder::new_plain();
-    // server_builder3.add_service(EpaxosServiceServer::new_service_def(Epaxos::init()));
-    // server_builder3.http.set_port(REPLICA3_PORT);
-    // let server3 = server_builder3.build().expect("build");
-    // println!("server 3 started on addr {}", server3.local_addr());
 
     // Blocks the main thread forever
     loop {
