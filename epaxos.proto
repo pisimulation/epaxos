@@ -30,27 +30,25 @@ message Command {
     oneof ClientRequest {
         WriteRequest write_req = 1;
         ReadRequest read_req = 2;
-        PreAccept pre_accept = 5;
-        PreAcceptOK pre_accept_ok = 6;
-        Commit commit = 7;
     }
     int32 seq = 3;
     repeated Command deps = 4;
-    // oneof ReplicaMessage {
-    //     PreAccept pre_accept = 5;
-    //     PreAcceptOK pre_accept_ok = 6;
-    //     Commit commit = 7;
-    // }
+    oneof State {
+        bool pre_accept = 5;
+        bool pre_accept_ok = 6;
+        bool commit = 7;
+    }
 }
 
 message PreAccept {
+    int32 replica_id = 1;
     oneof ClientRequest {
-        WriteRequest write_req = 1;
-        ReadRequest read_req = 2;
+        WriteRequest write_req = 2;
+        ReadRequest read_req = 3;
     }
-    int32 seq = 3;
-    repeated Command deps = 4;
-    int32 instance_number = 5;
+    int32 seq = 4;
+    repeated Command deps = 5;
+    int32 instance_number = 6;
 }
 
 message PreAcceptOK {
