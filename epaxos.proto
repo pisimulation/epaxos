@@ -26,6 +26,11 @@ message ReadResponse {
     int32 value = 1;
 }
 
+enum State {
+    PRE_ACCEPT = 0;
+    COMMIT = 1;
+}
+
 message Command {
     oneof ClientRequest {
         WriteRequest write_req = 1;
@@ -33,11 +38,7 @@ message Command {
     }
     int32 seq = 3;
     repeated Command deps = 4;
-    oneof State {
-        bool pre_accept = 5;
-        bool pre_accept_ok = 6;
-        bool commit = 7;
-    }
+    State state = 5;
 }
 
 message PreAccept {

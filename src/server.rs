@@ -80,7 +80,7 @@ impl Epaxos {
         cmd.set_write_req(write_req.clone());
         cmd.set_seq(seq.clone());
         cmd.set_deps(interf.clone());
-        cmd.set_pre_accept(true);
+        cmd.set_state(State::PRE_ACCEPT);
         (*self.cmds.lock().unwrap())[self.id as usize]
             .insert(*self.instance_number.lock().unwrap() as usize, cmd);
         let mut fast_quorum = 0;
@@ -109,10 +109,7 @@ impl Epaxos {
             // Update the state in the log to commit
             ((*self.cmds.lock().unwrap())[self.id as usize]
                 [*self.instance_number.lock().unwrap() as usize])
-                .set_commit(true);
-            ((*self.cmds.lock().unwrap())[self.id as usize]
-                [*self.instance_number.lock().unwrap() as usize])
-                .set_pre_accept(false);
+                .set_state(State::COMMIT);
 
             // Send Commit message to all replicas
             let mut commit_msg = Commit::new();
@@ -223,7 +220,7 @@ impl EpaxosService for Epaxos {
         cmd.set_write_req(pre_accept_msg.get_write_req().clone());
         cmd.set_seq(seq);
         cmd.set_deps(deps.clone());
-        cmd.set_pre_accept_ok(true);
+        cmd.set_state(State::PRE_ACCEPT);
         (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(i as usize, cmd);
 
         let mut r = PreAcceptOK::new();
@@ -243,6 +240,12 @@ impl EpaxosService for Epaxos {
             commit_msg.get_write_req().get_key(),
             commit_msg.get_write_req().get_value()
         );
+        // Update the state in the log to commit
+        ((*self.cmds.lock().unwrap())[commit_msg.get_replica_id() as usize]
+            [commit_msg.get_instance_number() as usize])
+            .set_state(State::COMMIT);
+        println!("My log is {:?}", *self.cmds.lock().unwrap());
+
         let mut r = Empty::new();
         return grpc::SingleResponse::completed(r);
     }
