@@ -87,7 +87,9 @@ impl Epaxos {
                 .pre_accept(grpc::RequestOptions::new(), pre_accept_msg.clone());
             replies.push(pre_accept_ok);
         }
-        println!("PIPI {}", replies.len());
+        // TODO how to wait for replies w/o blocking
+        //  let res0 = replies[0].wait();
+        //println!("Got a pre_accept_ok {:?}", res0);
         *self.instance_number.lock().unwrap() += 1;
     }
 
@@ -178,8 +180,9 @@ impl EpaxosService for Epaxos {
         let interf = self.find_interference(key.to_owned());
         let seq = cmp::max(pre_accept_msg.get_seq(), 1 + self.find_max_seq(&interf));
         // Union interf with deps
-        let mut deps = protobuf::RepeatedField::new();
-        deps.clone_from_slice(pre_accept_msg.get_deps());
+        let mut deps = protobuf::RepeatedField::from_vec(pre_accept_msg.get_deps().to_vec());
+        // TODO size of src and dst does not match
+        println!("PIiiiiiii");
         for interf_command in interf.iter() {
             if !deps.contains(interf_command) {
                 deps.push(interf_command.clone());
@@ -194,6 +197,7 @@ impl EpaxosService for Epaxos {
         (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(i as usize, cmd);
 
         let mut r = PreAcceptOK::new();
+        r.set_replica_id(self.id);
         r.set_write_req(pre_accept_msg.get_write_req().clone());
         r.set_seq(seq);
         r.set_deps(deps.clone());

@@ -52,13 +52,14 @@ message PreAccept {
 }
 
 message PreAcceptOK {
+    int32 replica_id = 1;
     oneof ClientRequest {
-        WriteRequest write_req = 1;
-        ReadRequest read_req = 2;
+        WriteRequest write_req = 2;
+        ReadRequest read_req = 3;
     }
-    int32 seq = 3;
-    repeated Command deps = 4;
-    int32 instance_number = 5;
+    int32 seq = 4;
+    repeated Command deps = 5;
+    int32 instance_number = 6;
 }
 
 message Commit {

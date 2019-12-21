@@ -1695,6 +1695,7 @@ impl ::protobuf::reflect::ProtobufValue for PreAccept {
 #[derive(PartialEq,Clone,Default)]
 pub struct PreAcceptOK {
     // message fields
+    pub replica_id: i32,
     pub seq: i32,
     pub deps: ::protobuf::RepeatedField<Command>,
     pub instance_number: i32,
@@ -1722,7 +1723,22 @@ impl PreAcceptOK {
         ::std::default::Default::default()
     }
 
-    // .epaxos.WriteRequest write_req = 1;
+    // int32 replica_id = 1;
+
+
+    pub fn get_replica_id(&self) -> i32 {
+        self.replica_id
+    }
+    pub fn clear_replica_id(&mut self) {
+        self.replica_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_replica_id(&mut self, v: i32) {
+        self.replica_id = v;
+    }
+
+    // .epaxos.WriteRequest write_req = 2;
 
 
     pub fn get_write_req(&self) -> &WriteRequest {
@@ -1771,7 +1787,7 @@ impl PreAcceptOK {
         }
     }
 
-    // .epaxos.ReadRequest read_req = 2;
+    // .epaxos.ReadRequest read_req = 3;
 
 
     pub fn get_read_req(&self) -> &ReadRequest {
@@ -1820,7 +1836,7 @@ impl PreAcceptOK {
         }
     }
 
-    // int32 seq = 3;
+    // int32 seq = 4;
 
 
     pub fn get_seq(&self) -> i32 {
@@ -1835,7 +1851,7 @@ impl PreAcceptOK {
         self.seq = v;
     }
 
-    // repeated .epaxos.Command deps = 4;
+    // repeated .epaxos.Command deps = 5;
 
 
     pub fn get_deps(&self) -> &[Command] {
@@ -1860,7 +1876,7 @@ impl PreAcceptOK {
         ::std::mem::replace(&mut self.deps, ::protobuf::RepeatedField::new())
     }
 
-    // int32 instance_number = 5;
+    // int32 instance_number = 6;
 
 
     pub fn get_instance_number(&self) -> i32 {
@@ -1901,28 +1917,35 @@ impl ::protobuf::Message for PreAcceptOK {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(is.read_message()?));
+                    let tmp = is.read_int32()?;
+                    self.replica_id = tmp;
                 },
                 2 => {
                     if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(is.read_message()?));
+                    self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(is.read_message()?));
                 },
                 3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(is.read_message()?));
+                },
+                4 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_int32()?;
                     self.seq = tmp;
                 },
-                4 => {
+                5 => {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.deps)?;
                 },
-                5 => {
+                6 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
@@ -1941,15 +1964,18 @@ impl ::protobuf::Message for PreAcceptOK {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if self.replica_id != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.replica_id, ::protobuf::wire_format::WireTypeVarint);
+        }
         if self.seq != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.seq, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(4, self.seq, ::protobuf::wire_format::WireTypeVarint);
         }
         for value in &self.deps {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
         if self.instance_number != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.instance_number, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(6, self.instance_number, ::protobuf::wire_format::WireTypeVarint);
         }
         if let ::std::option::Option::Some(ref v) = self.ClientRequest {
             match v {
@@ -1969,26 +1995,29 @@ impl ::protobuf::Message for PreAcceptOK {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.replica_id != 0 {
+            os.write_int32(1, self.replica_id)?;
+        }
         if self.seq != 0 {
-            os.write_int32(3, self.seq)?;
+            os.write_int32(4, self.seq)?;
         }
         for v in &self.deps {
-            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
         if self.instance_number != 0 {
-            os.write_int32(5, self.instance_number)?;
+            os.write_int32(6, self.instance_number)?;
         }
         if let ::std::option::Option::Some(ref v) = self.ClientRequest {
             match v {
                 &PreAcceptOK_oneof_ClientRequest::write_req(ref v) => {
-                    os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
                 },
                 &PreAcceptOK_oneof_ClientRequest::read_req(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
                 },
@@ -2036,6 +2065,11 @@ impl ::protobuf::Message for PreAcceptOK {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                    "replica_id",
+                    |m: &PreAcceptOK| { &m.replica_id },
+                    |m: &mut PreAcceptOK| { &mut m.replica_id },
+                ));
                 fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, WriteRequest>(
                     "write_req",
                     PreAcceptOK::has_write_req,
@@ -2083,6 +2117,7 @@ impl ::protobuf::Message for PreAcceptOK {
 
 impl ::protobuf::Clear for PreAcceptOK {
     fn clear(&mut self) {
+        self.replica_id = 0;
         self.ClientRequest = ::std::option::Option::None;
         self.ClientRequest = ::std::option::Option::None;
         self.seq = 0;
@@ -2661,22 +2696,23 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     adRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x04\x20\x01(\x05R\x03seq\
     \x12#\n\x04deps\x18\x05\x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\
     \x0finstance_number\x18\x06\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClie\
-    ntRequest\"\xe5\x01\n\x0bPreAcceptOK\x123\n\twrite_req\x18\x01\x20\x01(\
-    \x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x02\
-    \x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\x03seq\
-    \x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.e\
-    paxos.CommandR\x04deps\x12'\n\x0finstance_number\x18\x05\x20\x01(\x05R\
-    \x0einstanceNumberB\x0f\n\rClientRequest\"\xe0\x01\n\x06Commit\x123\n\tw\
-    rite_req\x18\x01\x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\
-    \x120\n\x08read_req\x18\x02\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07\
-    readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\
-    \x04\x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_number\
-    \x18\x05\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\x07\n\
-    \x05Empty2\xd7\x01\n\rEpaxosService\x124\n\x05write\x12\x14.epaxos.Write\
-    Request\x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadR\
-    equest\x1a\x14.epaxos.ReadResponse\x124\n\npre_accept\x12\x11.epaxos.Pre\
-    Accept\x1a\x13.epaxos.PreAcceptOK\x12'\n\x06commit\x12\x0e.epaxos.Commit\
-    \x1a\r.epaxos.Emptyb\x06proto3\
+    ntRequest\"\x84\x02\n\x0bPreAcceptOK\x12\x1d\n\nreplica_id\x18\x01\x20\
+    \x01(\x05R\treplicaId\x123\n\twrite_req\x18\x02\x20\x01(\x0b2\x14.epaxos\
+    .WriteRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x03\x20\x01(\x0b2\
+    \x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x04\x20\x01(\
+    \x05R\x03seq\x12#\n\x04deps\x18\x05\x20\x03(\x0b2\x0f.epaxos.CommandR\
+    \x04deps\x12'\n\x0finstance_number\x18\x06\x20\x01(\x05R\x0einstanceNumb\
+    erB\x0f\n\rClientRequest\"\xe0\x01\n\x06Commit\x123\n\twrite_req\x18\x01\
+    \x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\x08read_re\
+    q\x18\x02\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\
+    \x03seq\x18\x03\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b\
+    2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_number\x18\x05\x20\x01(\
+    \x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\x07\n\x05Empty2\xd7\x01\
+    \n\rEpaxosService\x124\n\x05write\x12\x14.epaxos.WriteRequest\x1a\x15.ep\
+    axos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadRequest\x1a\x14.epa\
+    xos.ReadResponse\x124\n\npre_accept\x12\x11.epaxos.PreAccept\x1a\x13.epa\
+    xos.PreAcceptOK\x12'\n\x06commit\x12\x0e.epaxos.Commit\x1a\r.epaxos.Empt\
+    yb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
