@@ -15,10 +15,13 @@ use std::{
     thread,
 };
 
+pub const QUORUM: u16 = 2;
 pub const REPLICAS_NUM: u16 = 3;
 pub const REPLICA1_PORT: u16 = 10000;
 pub const REPLICA2_PORT: u16 = 10001;
 pub const REPLICA3_PORT: u16 = 10002;
+pub const REPLICA4_PORT: u16 = 10003;
+pub const REPLICA5_PORT: u16 = 10004;
 
 #[derive(Clone)]
 struct Epaxos {
@@ -80,16 +83,53 @@ impl Epaxos {
         cmd.set_pre_accept(true);
         (*self.cmds.lock().unwrap())[self.id as usize]
             .insert(*self.instance_number.lock().unwrap() as usize, cmd);
-        let mut replies = Vec::new();
+        let mut fast_quorum = 0;
         for i in 0..REPLICAS_NUM {
+            if i == self.id as u16 {
+                continue;
+            }
             println!("Sending pre_accept to replica {}", i);
             let pre_accept_ok = (*self.replicas.lock().unwrap())[i as usize]
                 .pre_accept(grpc::RequestOptions::new(), pre_accept_msg.clone());
-            replies.push(pre_accept_ok);
+            match pre_accept_ok.wait() {
+                Err(e) => panic!("Replica panic {:?}", e),
+                Ok((_, value, _))
+                    if value.get_seq() == pre_accept_msg.get_seq()
+                        && value.get_deps() == pre_accept_msg.get_deps() =>
+                {
+                    println!("Got an agreeing PreAcceptOK: {:?}", value);
+                    fast_quorum += 1;
+                }
+                Ok((_, value, _)) => println!("Some dissenting voice here! {:?}", value),
+            }
+        }
+
+        // Commit stage if has quorum
+        if fast_quorum >= QUORUM {
+            // Update the state in the log to commit
+            ((*self.cmds.lock().unwrap())[self.id as usize]
+                [*self.instance_number.lock().unwrap() as usize])
+                .set_commit(true);
+            ((*self.cmds.lock().unwrap())[self.id as usize]
+                [*self.instance_number.lock().unwrap() as usize])
+                .set_pre_accept(false);
+
+            // Send Commit message to all replicas
+            let mut commit_msg = Commit::new();
+            commit_msg.set_write_req(write_req.clone());
+            commit_msg.set_seq(seq.clone());
+            commit_msg.set_deps(interf.clone());
+            commit_msg.set_instance_number(*self.instance_number.lock().unwrap());
+            for i in 0..REPLICAS_NUM {
+                if i == self.id as u16 {
+                    continue;
+                }
+                (*self.replicas.lock().unwrap())[i as usize]
+                    .commit(grpc::RequestOptions::new(), commit_msg.clone());
+                println!("Sending Commit to replica {}", i);
+            }
         }
         // TODO how to wait for replies w/o blocking
-        //  let res0 = replies[0].wait();
-        //println!("Got a pre_accept_ok {:?}", res0);
         *self.instance_number.lock().unwrap() += 1;
     }
 
@@ -106,11 +146,6 @@ impl Epaxos {
     fn find_interference(&self, key: String) -> protobuf::RepeatedField<Command> {
         println!("Finding interf");
         let mut interf = protobuf::RepeatedField::new();
-        // go through self.cmds and look for those with req of the same key
-        // if (*self.cmds.lock().unwrap())[self.id as usize].is_empty() {
-        //     println!("nothing in cmds yet");
-        //     return interf;
-        // }
         for cmd in (*self.cmds.lock().unwrap()[self.id as usize]).iter() {
             if cmd.has_write_req() {
                 let req = cmd.get_write_req();
@@ -134,20 +169,17 @@ impl EpaxosService for Epaxos {
         _m: grpc::RequestOptions,
         req: WriteRequest,
     ) -> grpc::SingleResponse<WriteResponse> {
-        // TODO: do consensus before committing
-        //(*self.replicas.lock().unwrap())[0].pre_accept();
-        self.consensus(&req);
-
-        let mut r = WriteResponse::new();
-
         println!(
             "Received a write request with key = {} and value = {}",
             req.get_key(),
             req.get_value()
         );
+        self.consensus(&req);
+        // TODO when do I actually execute?
         (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
-
-        r.set_ack(true);
+        println!("Consensus successful. Sending a commit to client.");
+        let mut r = WriteResponse::new();
+        r.set_commit(true);
         grpc::SingleResponse::completed(r)
     }
     fn read(
@@ -181,8 +213,6 @@ impl EpaxosService for Epaxos {
         let seq = cmp::max(pre_accept_msg.get_seq(), 1 + self.find_max_seq(&interf));
         // Union interf with deps
         let mut deps = protobuf::RepeatedField::from_vec(pre_accept_msg.get_deps().to_vec());
-        // TODO size of src and dst does not match
-        println!("PIiiiiiii");
         for interf_command in interf.iter() {
             if !deps.contains(interf_command) {
                 deps.push(interf_command.clone());
@@ -193,7 +223,7 @@ impl EpaxosService for Epaxos {
         cmd.set_write_req(pre_accept_msg.get_write_req().clone());
         cmd.set_seq(seq);
         cmd.set_deps(deps.clone());
-        cmd.set_pre_accept(true);
+        cmd.set_pre_accept_ok(true);
         (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(i as usize, cmd);
 
         let mut r = PreAcceptOK::new();
@@ -205,6 +235,14 @@ impl EpaxosService for Epaxos {
         return grpc::SingleResponse::completed(r);
     }
     fn commit(&self, o: grpc::RequestOptions, commit_msg: Commit) -> grpc::SingleResponse<Empty> {
+        println!(
+            "Replica {} received a Commit from {}\n
+            Write Key: {}, value: {}",
+            self.id,
+            commit_msg.get_replica_id(),
+            commit_msg.get_write_req().get_key(),
+            commit_msg.get_write_req().get_value()
+        );
         let mut r = Empty::new();
         return grpc::SingleResponse::completed(r);
     }
