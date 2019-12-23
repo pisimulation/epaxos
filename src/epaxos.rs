@@ -724,131 +724,256 @@ impl ::protobuf::reflect::ProtobufValue for ReadResponse {
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct Command {
+pub struct Instance {
     // message fields
-    pub seq: i32,
-    pub deps: ::protobuf::RepeatedField<Command>,
-    pub state: State,
-    // message oneof groups
-    pub ClientRequest: ::std::option::Option<Command_oneof_ClientRequest>,
+    pub replica: i32,
+    pub slot: i32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a Command {
-    fn default() -> &'a Command {
-        <Command as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a Instance {
+    fn default() -> &'a Instance {
+        <Instance as ::protobuf::Message>::default_instance()
     }
 }
 
-#[derive(Clone,PartialEq,Debug)]
-pub enum Command_oneof_ClientRequest {
-    write_req(WriteRequest),
-    read_req(ReadRequest),
-}
-
-impl Command {
-    pub fn new() -> Command {
+impl Instance {
+    pub fn new() -> Instance {
         ::std::default::Default::default()
     }
 
-    // .epaxos.WriteRequest write_req = 1;
+    // int32 replica = 1;
+
+
+    pub fn get_replica(&self) -> i32 {
+        self.replica
+    }
+    pub fn clear_replica(&mut self) {
+        self.replica = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_replica(&mut self, v: i32) {
+        self.replica = v;
+    }
+
+    // int32 slot = 2;
+
+
+    pub fn get_slot(&self) -> i32 {
+        self.slot
+    }
+    pub fn clear_slot(&mut self) {
+        self.slot = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_slot(&mut self, v: i32) {
+        self.slot = v;
+    }
+}
+
+impl ::protobuf::Message for Instance {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_int32()?;
+                    self.replica = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_int32()?;
+                    self.slot = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.replica != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.replica, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.slot != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.slot, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.replica != 0 {
+            os.write_int32(1, self.replica)?;
+        }
+        if self.slot != 0 {
+            os.write_int32(2, self.slot)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> Instance {
+        Instance::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                    "replica",
+                    |m: &Instance| { &m.replica },
+                    |m: &mut Instance| { &mut m.replica },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                    "slot",
+                    |m: &Instance| { &m.slot },
+                    |m: &mut Instance| { &mut m.slot },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<Instance>(
+                    "Instance",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static Instance {
+        static mut instance: ::protobuf::lazy::Lazy<Instance> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const Instance,
+        };
+        unsafe {
+            instance.get(Instance::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for Instance {
+    fn clear(&mut self) {
+        self.replica = 0;
+        self.slot = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for Instance {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Instance {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct Payload {
+    // message fields
+    pub write_req: ::protobuf::SingularPtrField<WriteRequest>,
+    pub seq: i32,
+    pub deps: ::protobuf::RepeatedField<Instance>,
+    pub instance: ::protobuf::SingularPtrField<Instance>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a Payload {
+    fn default() -> &'a Payload {
+        <Payload as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl Payload {
+    pub fn new() -> Payload {
+        ::std::default::Default::default()
+    }
+
+    // .epaxos.WriteRequest write_req = 2;
 
 
     pub fn get_write_req(&self) -> &WriteRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(ref v)) => v,
-            _ => WriteRequest::default_instance(),
-        }
+        self.write_req.as_ref().unwrap_or_else(|| WriteRequest::default_instance())
     }
     pub fn clear_write_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
+        self.write_req.clear();
     }
 
     pub fn has_write_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(..)) => true,
-            _ => false,
-        }
+        self.write_req.is_some()
     }
 
     // Param is passed by value, moved
     pub fn set_write_req(&mut self, v: WriteRequest) {
-        self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(v))
+        self.write_req = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
     pub fn mut_write_req(&mut self) -> &mut WriteRequest {
-        if let ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(WriteRequest::new()));
+        if self.write_req.is_none() {
+            self.write_req.set_default();
         }
-        match self.ClientRequest {
-            ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(ref mut v)) => v,
-            _ => panic!(),
-        }
+        self.write_req.as_mut().unwrap()
     }
 
     // Take field
     pub fn take_write_req(&mut self) -> WriteRequest {
-        if self.has_write_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            WriteRequest::new()
-        }
-    }
-
-    // .epaxos.ReadRequest read_req = 2;
-
-
-    pub fn get_read_req(&self) -> &ReadRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(ref v)) => v,
-            _ => ReadRequest::default_instance(),
-        }
-    }
-    pub fn clear_read_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-    }
-
-    pub fn has_read_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_read_req(&mut self, v: ReadRequest) {
-        self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_read_req(&mut self) -> &mut ReadRequest {
-        if let ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(ReadRequest::new()));
-        }
-        match self.ClientRequest {
-            ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_read_req(&mut self) -> ReadRequest {
-        if self.has_read_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            ReadRequest::new()
-        }
+        self.write_req.take().unwrap_or_else(|| WriteRequest::new())
     }
 
     // int32 seq = 3;
@@ -866,10 +991,10 @@ impl Command {
         self.seq = v;
     }
 
-    // repeated .epaxos.Command deps = 4;
+    // repeated .epaxos.Instance deps = 4;
 
 
-    pub fn get_deps(&self) -> &[Command] {
+    pub fn get_deps(&self) -> &[Instance] {
         &self.deps
     }
     pub fn clear_deps(&mut self) {
@@ -877,49 +1002,67 @@ impl Command {
     }
 
     // Param is passed by value, moved
-    pub fn set_deps(&mut self, v: ::protobuf::RepeatedField<Command>) {
+    pub fn set_deps(&mut self, v: ::protobuf::RepeatedField<Instance>) {
         self.deps = v;
     }
 
     // Mutable pointer to the field.
-    pub fn mut_deps(&mut self) -> &mut ::protobuf::RepeatedField<Command> {
+    pub fn mut_deps(&mut self) -> &mut ::protobuf::RepeatedField<Instance> {
         &mut self.deps
     }
 
     // Take field
-    pub fn take_deps(&mut self) -> ::protobuf::RepeatedField<Command> {
+    pub fn take_deps(&mut self) -> ::protobuf::RepeatedField<Instance> {
         ::std::mem::replace(&mut self.deps, ::protobuf::RepeatedField::new())
     }
 
-    // .epaxos.State state = 5;
+    // .epaxos.Instance instance = 5;
 
 
-    pub fn get_state(&self) -> State {
-        self.state
+    pub fn get_instance(&self) -> &Instance {
+        self.instance.as_ref().unwrap_or_else(|| Instance::default_instance())
     }
-    pub fn clear_state(&mut self) {
-        self.state = State::PRE_ACCEPT;
+    pub fn clear_instance(&mut self) {
+        self.instance.clear();
+    }
+
+    pub fn has_instance(&self) -> bool {
+        self.instance.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_state(&mut self, v: State) {
-        self.state = v;
+    pub fn set_instance(&mut self, v: Instance) {
+        self.instance = ::protobuf::SingularPtrField::some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_instance(&mut self) -> &mut Instance {
+        if self.instance.is_none() {
+            self.instance.set_default();
+        }
+        self.instance.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_instance(&mut self) -> Instance {
+        self.instance.take().unwrap_or_else(|| Instance::new())
     }
 }
 
-impl ::protobuf::Message for Command {
+impl ::protobuf::Message for Payload {
     fn is_initialized(&self) -> bool {
-        if let Some(Command_oneof_ClientRequest::write_req(ref v)) = self.ClientRequest {
+        for v in &self.write_req {
             if !v.is_initialized() {
                 return false;
             }
-        }
-        if let Some(Command_oneof_ClientRequest::read_req(ref v)) = self.ClientRequest {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
+        };
         for v in &self.deps {
+            if !v.is_initialized() {
+                return false;
+            }
+        };
+        for v in &self.instance {
             if !v.is_initialized() {
                 return false;
             }
@@ -931,17 +1074,8 @@ impl ::protobuf::Message for Command {
         while !is.eof()? {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::write_req(is.read_message()?));
-                },
                 2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(Command_oneof_ClientRequest::read_req(is.read_message()?));
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.write_req)?;
                 },
                 3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
@@ -954,7 +1088,7 @@ impl ::protobuf::Message for Command {
                     ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.deps)?;
                 },
                 5 => {
-                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.state, 5, &mut self.unknown_fields)?
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.instance)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -968,6 +1102,10 @@ impl ::protobuf::Message for Command {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
+        if let Some(ref v) = self.write_req.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+        }
         if self.seq != 0 {
             my_size += ::protobuf::rt::value_size(3, self.seq, ::protobuf::wire_format::WireTypeVarint);
         }
@@ -975,20 +1113,9 @@ impl ::protobuf::Message for Command {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         };
-        if self.state != State::PRE_ACCEPT {
-            my_size += ::protobuf::rt::enum_size(5, self.state);
-        }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &Command_oneof_ClientRequest::write_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-                &Command_oneof_ClientRequest::read_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
+        if let Some(ref v) = self.instance.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -996,6 +1123,11 @@ impl ::protobuf::Message for Command {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if let Some(ref v) = self.write_req.as_ref() {
+            os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
+        }
         if self.seq != 0 {
             os.write_int32(3, self.seq)?;
         }
@@ -1004,22 +1136,10 @@ impl ::protobuf::Message for Command {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         };
-        if self.state != State::PRE_ACCEPT {
-            os.write_enum(5, self.state.value())?;
-        }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &Command_oneof_ClientRequest::write_req(ref v) => {
-                    os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-                &Command_oneof_ClientRequest::read_req(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
+        if let Some(ref v) = self.instance.as_ref() {
+            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1051,8 +1171,8 @@ impl ::protobuf::Message for Command {
         Self::descriptor_static()
     }
 
-    fn new() -> Command {
-        Command::new()
+    fn new() -> Payload {
+        Payload::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1063,33 +1183,28 @@ impl ::protobuf::Message for Command {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, WriteRequest>(
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<WriteRequest>>(
                     "write_req",
-                    Command::has_write_req,
-                    Command::get_write_req,
-                ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, ReadRequest>(
-                    "read_req",
-                    Command::has_read_req,
-                    Command::get_read_req,
+                    |m: &Payload| { &m.write_req },
+                    |m: &mut Payload| { &mut m.write_req },
                 ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
                     "seq",
-                    |m: &Command| { &m.seq },
-                    |m: &mut Command| { &mut m.seq },
+                    |m: &Payload| { &m.seq },
+                    |m: &mut Payload| { &mut m.seq },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Command>>(
+                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Instance>>(
                     "deps",
-                    |m: &Command| { &m.deps },
-                    |m: &mut Command| { &mut m.deps },
+                    |m: &Payload| { &m.deps },
+                    |m: &mut Payload| { &mut m.deps },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<State>>(
-                    "state",
-                    |m: &Command| { &m.state },
-                    |m: &mut Command| { &mut m.state },
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Instance>>(
+                    "instance",
+                    |m: &Payload| { &m.instance },
+                    |m: &mut Payload| { &mut m.instance },
                 ));
-                ::protobuf::reflect::MessageDescriptor::new::<Command>(
-                    "Command",
+                ::protobuf::reflect::MessageDescriptor::new::<Payload>(
+                    "Payload",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1097,253 +1212,135 @@ impl ::protobuf::Message for Command {
         }
     }
 
-    fn default_instance() -> &'static Command {
-        static mut instance: ::protobuf::lazy::Lazy<Command> = ::protobuf::lazy::Lazy {
+    fn default_instance() -> &'static Payload {
+        static mut instance: ::protobuf::lazy::Lazy<Payload> = ::protobuf::lazy::Lazy {
             lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const Command,
+            ptr: 0 as *const Payload,
         };
         unsafe {
-            instance.get(Command::new)
+            instance.get(Payload::new)
         }
     }
 }
 
-impl ::protobuf::Clear for Command {
+impl ::protobuf::Clear for Payload {
     fn clear(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-        self.ClientRequest = ::std::option::Option::None;
+        self.write_req.clear();
         self.seq = 0;
         self.deps.clear();
-        self.state = State::PRE_ACCEPT;
+        self.instance.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for Command {
+impl ::std::fmt::Debug for Payload {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for Command {
+impl ::protobuf::reflect::ProtobufValue for Payload {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct PreAccept {
+pub struct AcceptOKPayload {
     // message fields
-    pub replica_id: i32,
-    pub seq: i32,
-    pub deps: ::protobuf::RepeatedField<Command>,
-    pub instance_number: i32,
-    // message oneof groups
-    pub ClientRequest: ::std::option::Option<PreAccept_oneof_ClientRequest>,
+    pub command: ::protobuf::SingularPtrField<WriteRequest>,
+    pub instance: ::protobuf::SingularPtrField<Instance>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a PreAccept {
-    fn default() -> &'a PreAccept {
-        <PreAccept as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a AcceptOKPayload {
+    fn default() -> &'a AcceptOKPayload {
+        <AcceptOKPayload as ::protobuf::Message>::default_instance()
     }
 }
 
-#[derive(Clone,PartialEq,Debug)]
-pub enum PreAccept_oneof_ClientRequest {
-    write_req(WriteRequest),
-    read_req(ReadRequest),
-}
-
-impl PreAccept {
-    pub fn new() -> PreAccept {
+impl AcceptOKPayload {
+    pub fn new() -> AcceptOKPayload {
         ::std::default::Default::default()
     }
 
-    // int32 replica_id = 1;
+    // .epaxos.WriteRequest command = 1;
 
 
-    pub fn get_replica_id(&self) -> i32 {
-        self.replica_id
+    pub fn get_command(&self) -> &WriteRequest {
+        self.command.as_ref().unwrap_or_else(|| WriteRequest::default_instance())
     }
-    pub fn clear_replica_id(&mut self) {
-        self.replica_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_replica_id(&mut self, v: i32) {
-        self.replica_id = v;
+    pub fn clear_command(&mut self) {
+        self.command.clear();
     }
 
-    // .epaxos.WriteRequest write_req = 2;
-
-
-    pub fn get_write_req(&self) -> &WriteRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(ref v)) => v,
-            _ => WriteRequest::default_instance(),
-        }
-    }
-    pub fn clear_write_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-    }
-
-    pub fn has_write_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(..)) => true,
-            _ => false,
-        }
+    pub fn has_command(&self) -> bool {
+        self.command.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_write_req(&mut self, v: WriteRequest) {
-        self.ClientRequest = ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(v))
+    pub fn set_command(&mut self, v: WriteRequest) {
+        self.command = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
-    pub fn mut_write_req(&mut self) -> &mut WriteRequest {
-        if let ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(WriteRequest::new()));
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_command(&mut self) -> &mut WriteRequest {
+        if self.command.is_none() {
+            self.command.set_default();
         }
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(ref mut v)) => v,
-            _ => panic!(),
-        }
+        self.command.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_write_req(&mut self) -> WriteRequest {
-        if self.has_write_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            WriteRequest::new()
-        }
+    pub fn take_command(&mut self) -> WriteRequest {
+        self.command.take().unwrap_or_else(|| WriteRequest::new())
     }
 
-    // .epaxos.ReadRequest read_req = 3;
+    // .epaxos.Instance instance = 4;
 
 
-    pub fn get_read_req(&self) -> &ReadRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(ref v)) => v,
-            _ => ReadRequest::default_instance(),
-        }
+    pub fn get_instance(&self) -> &Instance {
+        self.instance.as_ref().unwrap_or_else(|| Instance::default_instance())
     }
-    pub fn clear_read_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
+    pub fn clear_instance(&mut self) {
+        self.instance.clear();
     }
 
-    pub fn has_read_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(..)) => true,
-            _ => false,
-        }
+    pub fn has_instance(&self) -> bool {
+        self.instance.is_some()
     }
 
     // Param is passed by value, moved
-    pub fn set_read_req(&mut self, v: ReadRequest) {
-        self.ClientRequest = ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(v))
+    pub fn set_instance(&mut self, v: Instance) {
+        self.instance = ::protobuf::SingularPtrField::some(v);
     }
 
     // Mutable pointer to the field.
-    pub fn mut_read_req(&mut self) -> &mut ReadRequest {
-        if let ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(ReadRequest::new()));
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_instance(&mut self) -> &mut Instance {
+        if self.instance.is_none() {
+            self.instance.set_default();
         }
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(ref mut v)) => v,
-            _ => panic!(),
-        }
+        self.instance.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_read_req(&mut self) -> ReadRequest {
-        if self.has_read_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            ReadRequest::new()
-        }
-    }
-
-    // int32 seq = 4;
-
-
-    pub fn get_seq(&self) -> i32 {
-        self.seq
-    }
-    pub fn clear_seq(&mut self) {
-        self.seq = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_seq(&mut self, v: i32) {
-        self.seq = v;
-    }
-
-    // repeated .epaxos.Command deps = 5;
-
-
-    pub fn get_deps(&self) -> &[Command] {
-        &self.deps
-    }
-    pub fn clear_deps(&mut self) {
-        self.deps.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_deps(&mut self, v: ::protobuf::RepeatedField<Command>) {
-        self.deps = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_deps(&mut self) -> &mut ::protobuf::RepeatedField<Command> {
-        &mut self.deps
-    }
-
-    // Take field
-    pub fn take_deps(&mut self) -> ::protobuf::RepeatedField<Command> {
-        ::std::mem::replace(&mut self.deps, ::protobuf::RepeatedField::new())
-    }
-
-    // int32 instance_number = 6;
-
-
-    pub fn get_instance_number(&self) -> i32 {
-        self.instance_number
-    }
-    pub fn clear_instance_number(&mut self) {
-        self.instance_number = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_instance_number(&mut self, v: i32) {
-        self.instance_number = v;
+    pub fn take_instance(&mut self) -> Instance {
+        self.instance.take().unwrap_or_else(|| Instance::new())
     }
 }
 
-impl ::protobuf::Message for PreAccept {
+impl ::protobuf::Message for AcceptOKPayload {
     fn is_initialized(&self) -> bool {
-        if let Some(PreAccept_oneof_ClientRequest::write_req(ref v)) = self.ClientRequest {
+        for v in &self.command {
             if !v.is_initialized() {
                 return false;
             }
-        }
-        if let Some(PreAccept_oneof_ClientRequest::read_req(ref v)) = self.ClientRequest {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        for v in &self.deps {
+        };
+        for v in &self.instance {
             if !v.is_initialized() {
                 return false;
             }
@@ -1356,40 +1353,10 @@ impl ::protobuf::Message for PreAccept {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.replica_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(PreAccept_oneof_ClientRequest::write_req(is.read_message()?));
-                },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(PreAccept_oneof_ClientRequest::read_req(is.read_message()?));
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.command)?;
                 },
                 4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.seq = tmp;
-                },
-                5 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.deps)?;
-                },
-                6 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.instance_number = tmp;
+                    ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.instance)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1403,30 +1370,13 @@ impl ::protobuf::Message for PreAccept {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.replica_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.replica_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.seq != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.seq, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.deps {
-            let len = value.compute_size();
+        if let Some(ref v) = self.command.as_ref() {
+            let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
-        if self.instance_number != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.instance_number, ::protobuf::wire_format::WireTypeVarint);
         }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &PreAccept_oneof_ClientRequest::write_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-                &PreAccept_oneof_ClientRequest::read_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
+        if let Some(ref v) = self.instance.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1434,33 +1384,15 @@ impl ::protobuf::Message for PreAccept {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.replica_id != 0 {
-            os.write_int32(1, self.replica_id)?;
-        }
-        if self.seq != 0 {
-            os.write_int32(4, self.seq)?;
-        }
-        for v in &self.deps {
-            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+        if let Some(ref v) = self.command.as_ref() {
+            os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
-        };
-        if self.instance_number != 0 {
-            os.write_int32(6, self.instance_number)?;
         }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &PreAccept_oneof_ClientRequest::write_req(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-                &PreAccept_oneof_ClientRequest::read_req(ref v) => {
-                    os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
+        if let Some(ref v) = self.instance.as_ref() {
+            os.write_tag(4, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+            os.write_raw_varint32(v.get_cached_size())?;
+            v.write_to_with_cached_sizes(os)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1492,8 +1424,8 @@ impl ::protobuf::Message for PreAccept {
         Self::descriptor_static()
     }
 
-    fn new() -> PreAccept {
-        PreAccept::new()
+    fn new() -> AcceptOKPayload {
+        AcceptOKPayload::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1504,38 +1436,18 @@ impl ::protobuf::Message for PreAccept {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "replica_id",
-                    |m: &PreAccept| { &m.replica_id },
-                    |m: &mut PreAccept| { &mut m.replica_id },
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<WriteRequest>>(
+                    "command",
+                    |m: &AcceptOKPayload| { &m.command },
+                    |m: &mut AcceptOKPayload| { &mut m.command },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, WriteRequest>(
-                    "write_req",
-                    PreAccept::has_write_req,
-                    PreAccept::get_write_req,
+                fields.push(::protobuf::reflect::accessor::make_singular_ptr_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Instance>>(
+                    "instance",
+                    |m: &AcceptOKPayload| { &m.instance },
+                    |m: &mut AcceptOKPayload| { &mut m.instance },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, ReadRequest>(
-                    "read_req",
-                    PreAccept::has_read_req,
-                    PreAccept::get_read_req,
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "seq",
-                    |m: &PreAccept| { &m.seq },
-                    |m: &mut PreAccept| { &mut m.seq },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Command>>(
-                    "deps",
-                    |m: &PreAccept| { &m.deps },
-                    |m: &mut PreAccept| { &mut m.deps },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "instance_number",
-                    |m: &PreAccept| { &m.instance_number },
-                    |m: &mut PreAccept| { &mut m.instance_number },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new::<PreAccept>(
-                    "PreAccept",
+                ::protobuf::reflect::MessageDescriptor::new::<AcceptOKPayload>(
+                    "AcceptOKPayload",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1543,930 +1455,32 @@ impl ::protobuf::Message for PreAccept {
         }
     }
 
-    fn default_instance() -> &'static PreAccept {
-        static mut instance: ::protobuf::lazy::Lazy<PreAccept> = ::protobuf::lazy::Lazy {
+    fn default_instance() -> &'static AcceptOKPayload {
+        static mut instance: ::protobuf::lazy::Lazy<AcceptOKPayload> = ::protobuf::lazy::Lazy {
             lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const PreAccept,
+            ptr: 0 as *const AcceptOKPayload,
         };
         unsafe {
-            instance.get(PreAccept::new)
+            instance.get(AcceptOKPayload::new)
         }
     }
 }
 
-impl ::protobuf::Clear for PreAccept {
+impl ::protobuf::Clear for AcceptOKPayload {
     fn clear(&mut self) {
-        self.replica_id = 0;
-        self.ClientRequest = ::std::option::Option::None;
-        self.ClientRequest = ::std::option::Option::None;
-        self.seq = 0;
-        self.deps.clear();
-        self.instance_number = 0;
+        self.command.clear();
+        self.instance.clear();
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for PreAccept {
+impl ::std::fmt::Debug for AcceptOKPayload {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for PreAccept {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct PreAcceptOK {
-    // message fields
-    pub replica_id: i32,
-    pub seq: i32,
-    pub deps: ::protobuf::RepeatedField<Command>,
-    pub instance_number: i32,
-    // message oneof groups
-    pub ClientRequest: ::std::option::Option<PreAcceptOK_oneof_ClientRequest>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a PreAcceptOK {
-    fn default() -> &'a PreAcceptOK {
-        <PreAcceptOK as ::protobuf::Message>::default_instance()
-    }
-}
-
-#[derive(Clone,PartialEq,Debug)]
-pub enum PreAcceptOK_oneof_ClientRequest {
-    write_req(WriteRequest),
-    read_req(ReadRequest),
-}
-
-impl PreAcceptOK {
-    pub fn new() -> PreAcceptOK {
-        ::std::default::Default::default()
-    }
-
-    // int32 replica_id = 1;
-
-
-    pub fn get_replica_id(&self) -> i32 {
-        self.replica_id
-    }
-    pub fn clear_replica_id(&mut self) {
-        self.replica_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_replica_id(&mut self, v: i32) {
-        self.replica_id = v;
-    }
-
-    // .epaxos.WriteRequest write_req = 2;
-
-
-    pub fn get_write_req(&self) -> &WriteRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(ref v)) => v,
-            _ => WriteRequest::default_instance(),
-        }
-    }
-    pub fn clear_write_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-    }
-
-    pub fn has_write_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_write_req(&mut self, v: WriteRequest) {
-        self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_write_req(&mut self) -> &mut WriteRequest {
-        if let ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(WriteRequest::new()));
-        }
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_write_req(&mut self) -> WriteRequest {
-        if self.has_write_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            WriteRequest::new()
-        }
-    }
-
-    // .epaxos.ReadRequest read_req = 3;
-
-
-    pub fn get_read_req(&self) -> &ReadRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(ref v)) => v,
-            _ => ReadRequest::default_instance(),
-        }
-    }
-    pub fn clear_read_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-    }
-
-    pub fn has_read_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_read_req(&mut self, v: ReadRequest) {
-        self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_read_req(&mut self) -> &mut ReadRequest {
-        if let ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(ReadRequest::new()));
-        }
-        match self.ClientRequest {
-            ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_read_req(&mut self) -> ReadRequest {
-        if self.has_read_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            ReadRequest::new()
-        }
-    }
-
-    // int32 seq = 4;
-
-
-    pub fn get_seq(&self) -> i32 {
-        self.seq
-    }
-    pub fn clear_seq(&mut self) {
-        self.seq = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_seq(&mut self, v: i32) {
-        self.seq = v;
-    }
-
-    // repeated .epaxos.Command deps = 5;
-
-
-    pub fn get_deps(&self) -> &[Command] {
-        &self.deps
-    }
-    pub fn clear_deps(&mut self) {
-        self.deps.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_deps(&mut self, v: ::protobuf::RepeatedField<Command>) {
-        self.deps = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_deps(&mut self) -> &mut ::protobuf::RepeatedField<Command> {
-        &mut self.deps
-    }
-
-    // Take field
-    pub fn take_deps(&mut self) -> ::protobuf::RepeatedField<Command> {
-        ::std::mem::replace(&mut self.deps, ::protobuf::RepeatedField::new())
-    }
-
-    // int32 instance_number = 6;
-
-
-    pub fn get_instance_number(&self) -> i32 {
-        self.instance_number
-    }
-    pub fn clear_instance_number(&mut self) {
-        self.instance_number = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_instance_number(&mut self, v: i32) {
-        self.instance_number = v;
-    }
-}
-
-impl ::protobuf::Message for PreAcceptOK {
-    fn is_initialized(&self) -> bool {
-        if let Some(PreAcceptOK_oneof_ClientRequest::write_req(ref v)) = self.ClientRequest {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        if let Some(PreAcceptOK_oneof_ClientRequest::read_req(ref v)) = self.ClientRequest {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        for v in &self.deps {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.replica_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::write_req(is.read_message()?));
-                },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(PreAcceptOK_oneof_ClientRequest::read_req(is.read_message()?));
-                },
-                4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.seq = tmp;
-                },
-                5 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.deps)?;
-                },
-                6 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.instance_number = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.replica_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.replica_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.seq != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.seq, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.deps {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
-        if self.instance_number != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.instance_number, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &PreAcceptOK_oneof_ClientRequest::write_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-                &PreAcceptOK_oneof_ClientRequest::read_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.replica_id != 0 {
-            os.write_int32(1, self.replica_id)?;
-        }
-        if self.seq != 0 {
-            os.write_int32(4, self.seq)?;
-        }
-        for v in &self.deps {
-            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
-        if self.instance_number != 0 {
-            os.write_int32(6, self.instance_number)?;
-        }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &PreAcceptOK_oneof_ClientRequest::write_req(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-                &PreAcceptOK_oneof_ClientRequest::read_req(ref v) => {
-                    os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> PreAcceptOK {
-        PreAcceptOK::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "replica_id",
-                    |m: &PreAcceptOK| { &m.replica_id },
-                    |m: &mut PreAcceptOK| { &mut m.replica_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, WriteRequest>(
-                    "write_req",
-                    PreAcceptOK::has_write_req,
-                    PreAcceptOK::get_write_req,
-                ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, ReadRequest>(
-                    "read_req",
-                    PreAcceptOK::has_read_req,
-                    PreAcceptOK::get_read_req,
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "seq",
-                    |m: &PreAcceptOK| { &m.seq },
-                    |m: &mut PreAcceptOK| { &mut m.seq },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Command>>(
-                    "deps",
-                    |m: &PreAcceptOK| { &m.deps },
-                    |m: &mut PreAcceptOK| { &mut m.deps },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "instance_number",
-                    |m: &PreAcceptOK| { &m.instance_number },
-                    |m: &mut PreAcceptOK| { &mut m.instance_number },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new::<PreAcceptOK>(
-                    "PreAcceptOK",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static PreAcceptOK {
-        static mut instance: ::protobuf::lazy::Lazy<PreAcceptOK> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const PreAcceptOK,
-        };
-        unsafe {
-            instance.get(PreAcceptOK::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for PreAcceptOK {
-    fn clear(&mut self) {
-        self.replica_id = 0;
-        self.ClientRequest = ::std::option::Option::None;
-        self.ClientRequest = ::std::option::Option::None;
-        self.seq = 0;
-        self.deps.clear();
-        self.instance_number = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for PreAcceptOK {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for PreAcceptOK {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct Commit {
-    // message fields
-    pub replica_id: i32,
-    pub seq: i32,
-    pub deps: ::protobuf::RepeatedField<Command>,
-    pub instance_number: i32,
-    // message oneof groups
-    pub ClientRequest: ::std::option::Option<Commit_oneof_ClientRequest>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a Commit {
-    fn default() -> &'a Commit {
-        <Commit as ::protobuf::Message>::default_instance()
-    }
-}
-
-#[derive(Clone,PartialEq,Debug)]
-pub enum Commit_oneof_ClientRequest {
-    write_req(WriteRequest),
-    read_req(ReadRequest),
-}
-
-impl Commit {
-    pub fn new() -> Commit {
-        ::std::default::Default::default()
-    }
-
-    // int32 replica_id = 1;
-
-
-    pub fn get_replica_id(&self) -> i32 {
-        self.replica_id
-    }
-    pub fn clear_replica_id(&mut self) {
-        self.replica_id = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_replica_id(&mut self, v: i32) {
-        self.replica_id = v;
-    }
-
-    // .epaxos.WriteRequest write_req = 2;
-
-
-    pub fn get_write_req(&self) -> &WriteRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(ref v)) => v,
-            _ => WriteRequest::default_instance(),
-        }
-    }
-    pub fn clear_write_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-    }
-
-    pub fn has_write_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_write_req(&mut self, v: WriteRequest) {
-        self.ClientRequest = ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_write_req(&mut self) -> &mut WriteRequest {
-        if let ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(WriteRequest::new()));
-        }
-        match self.ClientRequest {
-            ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_write_req(&mut self) -> WriteRequest {
-        if self.has_write_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            WriteRequest::new()
-        }
-    }
-
-    // .epaxos.ReadRequest read_req = 3;
-
-
-    pub fn get_read_req(&self) -> &ReadRequest {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(ref v)) => v,
-            _ => ReadRequest::default_instance(),
-        }
-    }
-    pub fn clear_read_req(&mut self) {
-        self.ClientRequest = ::std::option::Option::None;
-    }
-
-    pub fn has_read_req(&self) -> bool {
-        match self.ClientRequest {
-            ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_read_req(&mut self, v: ReadRequest) {
-        self.ClientRequest = ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_read_req(&mut self) -> &mut ReadRequest {
-        if let ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(_)) = self.ClientRequest {
-        } else {
-            self.ClientRequest = ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(ReadRequest::new()));
-        }
-        match self.ClientRequest {
-            ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_read_req(&mut self) -> ReadRequest {
-        if self.has_read_req() {
-            match self.ClientRequest.take() {
-                ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            ReadRequest::new()
-        }
-    }
-
-    // int32 seq = 4;
-
-
-    pub fn get_seq(&self) -> i32 {
-        self.seq
-    }
-    pub fn clear_seq(&mut self) {
-        self.seq = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_seq(&mut self, v: i32) {
-        self.seq = v;
-    }
-
-    // repeated .epaxos.Command deps = 5;
-
-
-    pub fn get_deps(&self) -> &[Command] {
-        &self.deps
-    }
-    pub fn clear_deps(&mut self) {
-        self.deps.clear();
-    }
-
-    // Param is passed by value, moved
-    pub fn set_deps(&mut self, v: ::protobuf::RepeatedField<Command>) {
-        self.deps = v;
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_deps(&mut self) -> &mut ::protobuf::RepeatedField<Command> {
-        &mut self.deps
-    }
-
-    // Take field
-    pub fn take_deps(&mut self) -> ::protobuf::RepeatedField<Command> {
-        ::std::mem::replace(&mut self.deps, ::protobuf::RepeatedField::new())
-    }
-
-    // int32 instance_number = 6;
-
-
-    pub fn get_instance_number(&self) -> i32 {
-        self.instance_number
-    }
-    pub fn clear_instance_number(&mut self) {
-        self.instance_number = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_instance_number(&mut self, v: i32) {
-        self.instance_number = v;
-    }
-}
-
-impl ::protobuf::Message for Commit {
-    fn is_initialized(&self) -> bool {
-        if let Some(Commit_oneof_ClientRequest::write_req(ref v)) = self.ClientRequest {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        if let Some(Commit_oneof_ClientRequest::read_req(ref v)) = self.ClientRequest {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        for v in &self.deps {
-            if !v.is_initialized() {
-                return false;
-            }
-        };
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.replica_id = tmp;
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(Commit_oneof_ClientRequest::write_req(is.read_message()?));
-                },
-                3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.ClientRequest = ::std::option::Option::Some(Commit_oneof_ClientRequest::read_req(is.read_message()?));
-                },
-                4 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.seq = tmp;
-                },
-                5 => {
-                    ::protobuf::rt::read_repeated_message_into(wire_type, is, &mut self.deps)?;
-                },
-                6 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int32()?;
-                    self.instance_number = tmp;
-                },
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        if self.replica_id != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.replica_id, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if self.seq != 0 {
-            my_size += ::protobuf::rt::value_size(4, self.seq, ::protobuf::wire_format::WireTypeVarint);
-        }
-        for value in &self.deps {
-            let len = value.compute_size();
-            my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-        };
-        if self.instance_number != 0 {
-            my_size += ::protobuf::rt::value_size(6, self.instance_number, ::protobuf::wire_format::WireTypeVarint);
-        }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &Commit_oneof_ClientRequest::write_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-                &Commit_oneof_ClientRequest::read_req(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
-        }
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if self.replica_id != 0 {
-            os.write_int32(1, self.replica_id)?;
-        }
-        if self.seq != 0 {
-            os.write_int32(4, self.seq)?;
-        }
-        for v in &self.deps {
-            os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-            os.write_raw_varint32(v.get_cached_size())?;
-            v.write_to_with_cached_sizes(os)?;
-        };
-        if self.instance_number != 0 {
-            os.write_int32(6, self.instance_number)?;
-        }
-        if let ::std::option::Option::Some(ref v) = self.ClientRequest {
-            match v {
-                &Commit_oneof_ClientRequest::write_req(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-                &Commit_oneof_ClientRequest::read_req(ref v) => {
-                    os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
-        }
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &dyn (::std::any::Any) {
-        self as &dyn (::std::any::Any)
-    }
-    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
-        self as &mut dyn (::std::any::Any)
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> Commit {
-        Commit::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "replica_id",
-                    |m: &Commit| { &m.replica_id },
-                    |m: &mut Commit| { &mut m.replica_id },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, WriteRequest>(
-                    "write_req",
-                    Commit::has_write_req,
-                    Commit::get_write_req,
-                ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, ReadRequest>(
-                    "read_req",
-                    Commit::has_read_req,
-                    Commit::get_read_req,
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "seq",
-                    |m: &Commit| { &m.seq },
-                    |m: &mut Commit| { &mut m.seq },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_repeated_field_accessor::<_, ::protobuf::types::ProtobufTypeMessage<Command>>(
-                    "deps",
-                    |m: &Commit| { &m.deps },
-                    |m: &mut Commit| { &mut m.deps },
-                ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "instance_number",
-                    |m: &Commit| { &m.instance_number },
-                    |m: &mut Commit| { &mut m.instance_number },
-                ));
-                ::protobuf::reflect::MessageDescriptor::new::<Commit>(
-                    "Commit",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static Commit {
-        static mut instance: ::protobuf::lazy::Lazy<Commit> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const Commit,
-        };
-        unsafe {
-            instance.get(Commit::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for Commit {
-    fn clear(&mut self) {
-        self.replica_id = 0;
-        self.ClientRequest = ::std::option::Option::None;
-        self.ClientRequest = ::std::option::Option::None;
-        self.seq = 0;
-        self.deps.clear();
-        self.instance_number = 0;
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for Commit {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for Commit {
+impl ::protobuf::reflect::ProtobufValue for AcceptOKPayload {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
@@ -2598,97 +1612,27 @@ impl ::protobuf::reflect::ProtobufValue for Empty {
     }
 }
 
-#[derive(Clone,PartialEq,Eq,Debug,Hash)]
-pub enum State {
-    PRE_ACCEPT = 0,
-    COMMIT = 1,
-}
-
-impl ::protobuf::ProtobufEnum for State {
-    fn value(&self) -> i32 {
-        *self as i32
-    }
-
-    fn from_i32(value: i32) -> ::std::option::Option<State> {
-        match value {
-            0 => ::std::option::Option::Some(State::PRE_ACCEPT),
-            1 => ::std::option::Option::Some(State::COMMIT),
-            _ => ::std::option::Option::None
-        }
-    }
-
-    fn values() -> &'static [Self] {
-        static values: &'static [State] = &[
-            State::PRE_ACCEPT,
-            State::COMMIT,
-        ];
-        values
-    }
-
-    fn enum_descriptor_static() -> &'static ::protobuf::reflect::EnumDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::EnumDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::EnumDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                ::protobuf::reflect::EnumDescriptor::new("State", file_descriptor_proto())
-            })
-        }
-    }
-}
-
-impl ::std::marker::Copy for State {
-}
-
-impl ::std::default::Default for State {
-    fn default() -> Self {
-        State::PRE_ACCEPT
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for State {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Enum(self.descriptor())
-    }
-}
-
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0cepaxos.proto\x12\x06epaxos\"6\n\x0cWriteRequest\x12\x10\n\x03key\
-    \x18\x01\x20\x01(\tR\x03key\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\x05\
-    value\"'\n\rWriteResponse\x12\x16\n\x06commit\x18\x01\x20\x01(\x08R\x06c\
-    ommit\"\x1f\n\x0bReadRequest\x12\x10\n\x03key\x18\x01\x20\x01(\tR\x03key\
-    \"$\n\x0cReadResponse\x12\x14\n\x05value\x18\x01\x20\x01(\x05R\x05value\
-    \"\xdd\x01\n\x07Command\x123\n\twrite_req\x18\x01\x20\x01(\x0b2\x14.epax\
-    os.WriteRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x02\x20\x01(\x0b2\
-    \x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\x03\x20\x01(\
-    \x05R\x03seq\x12#\n\x04deps\x18\x04\x20\x03(\x0b2\x0f.epaxos.CommandR\
-    \x04deps\x12#\n\x05state\x18\x05\x20\x01(\x0e2\r.epaxos.StateR\x05stateB\
-    \x0f\n\rClientRequest\"\x82\x02\n\tPreAccept\x12\x1d\n\nreplica_id\x18\
-    \x01\x20\x01(\x05R\treplicaId\x123\n\twrite_req\x18\x02\x20\x01(\x0b2\
-    \x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\x08read_req\x18\x03\x20\
-    \x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\x03seq\x18\
-    \x04\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x05\x20\x03(\x0b2\x0f.epaxo\
-    s.CommandR\x04deps\x12'\n\x0finstance_number\x18\x06\x20\x01(\x05R\x0ein\
-    stanceNumberB\x0f\n\rClientRequest\"\x84\x02\n\x0bPreAcceptOK\x12\x1d\n\
-    \nreplica_id\x18\x01\x20\x01(\x05R\treplicaId\x123\n\twrite_req\x18\x02\
-    \x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\x08read_re\
-    q\x18\x03\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\x12\x10\n\
-    \x03seq\x18\x04\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x05\x20\x03(\x0b\
-    2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_number\x18\x06\x20\x01(\
-    \x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\xff\x01\n\x06Commit\x12\
-    \x1d\n\nreplica_id\x18\x01\x20\x01(\x05R\treplicaId\x123\n\twrite_req\
-    \x18\x02\x20\x01(\x0b2\x14.epaxos.WriteRequestH\0R\x08writeReq\x120\n\
-    \x08read_req\x18\x03\x20\x01(\x0b2\x13.epaxos.ReadRequestH\0R\x07readReq\
-    \x12\x10\n\x03seq\x18\x04\x20\x01(\x05R\x03seq\x12#\n\x04deps\x18\x05\
-    \x20\x03(\x0b2\x0f.epaxos.CommandR\x04deps\x12'\n\x0finstance_number\x18\
-    \x06\x20\x01(\x05R\x0einstanceNumberB\x0f\n\rClientRequest\"\x07\n\x05Em\
-    pty*#\n\x05State\x12\x0e\n\nPRE_ACCEPT\x10\0\x12\n\n\x06COMMIT\x10\x012\
-    \xd7\x01\n\rEpaxosService\x124\n\x05write\x12\x14.epaxos.WriteRequest\
-    \x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadRequest\
-    \x1a\x14.epaxos.ReadResponse\x124\n\npre_accept\x12\x11.epaxos.PreAccept\
-    \x1a\x13.epaxos.PreAcceptOK\x12'\n\x06commit\x12\x0e.epaxos.Commit\x1a\r\
-    .epaxos.Emptyb\x06proto3\
+    \n\x0cepaxos.proto\x12\x06epaxos\x1a\x1bgoogle/protobuf/empty.proto\"6\n\
+    \x0cWriteRequest\x12\x10\n\x03key\x18\x01\x20\x01(\tR\x03key\x12\x14\n\
+    \x05value\x18\x02\x20\x01(\x05R\x05value\"'\n\rWriteResponse\x12\x16\n\
+    \x06commit\x18\x01\x20\x01(\x08R\x06commit\"\x1f\n\x0bReadRequest\x12\
+    \x10\n\x03key\x18\x01\x20\x01(\tR\x03key\"$\n\x0cReadResponse\x12\x14\n\
+    \x05value\x18\x01\x20\x01(\x05R\x05value\"8\n\x08Instance\x12\x18\n\x07r\
+    eplica\x18\x01\x20\x01(\x05R\x07replica\x12\x12\n\x04slot\x18\x02\x20\
+    \x01(\x05R\x04slot\"\xa2\x01\n\x07Payload\x121\n\twrite_req\x18\x02\x20\
+    \x01(\x0b2\x14.epaxos.WriteRequestR\x08writeReq\x12\x10\n\x03seq\x18\x03\
+    \x20\x01(\x05R\x03seq\x12$\n\x04deps\x18\x04\x20\x03(\x0b2\x10.epaxos.In\
+    stanceR\x04deps\x12,\n\x08instance\x18\x05\x20\x01(\x0b2\x10.epaxos.Inst\
+    anceR\x08instance\"o\n\x0fAcceptOKPayload\x12.\n\x07command\x18\x01\x20\
+    \x01(\x0b2\x14.epaxos.WriteRequestR\x07command\x12,\n\x08instance\x18\
+    \x04\x20\x01(\x0b2\x10.epaxos.InstanceR\x08instance\"\x07\n\x05Empty2\
+    \x9e\x01\n\x0eEpaxosInternal\x12.\n\npre_accept\x12\x0f.epaxos.Payload\
+    \x1a\x0f.epaxos.Payload\x122\n\x06accept\x12\x0f.epaxos.Payload\x1a\x17.\
+    epaxos.AcceptOKPayload\x12(\n\x06commit\x12\x0f.epaxos.Payload\x1a\r.epa\
+    xos.Empty2y\n\x0eEpaxosExternal\x124\n\x05write\x12\x14.epaxos.WriteRequ\
+    est\x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadReque\
+    st\x1a\x14.epaxos.ReadResponseb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

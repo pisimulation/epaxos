@@ -1,12 +1,17 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 package epaxos;
 
-service EpaxosService {
+service EpaxosInternal {
+    rpc pre_accept(Payload) returns (Payload);
+    rpc accept(Payload) returns (AcceptOKPayload);
+    rpc commit(Payload) returns (Empty);
+}
+
+service EpaxosExternal {
     rpc write(WriteRequest) returns (WriteResponse);
     rpc read(ReadRequest) returns (ReadResponse);
-    rpc pre_accept(PreAccept) returns (PreAcceptOK);
-    rpc commit(Commit) returns (Empty);
 }
 
 message WriteRequest {
@@ -26,54 +31,21 @@ message ReadResponse {
     int32 value = 1;
 }
 
-enum State {
-    PRE_ACCEPT = 0;
-    COMMIT = 1;
+message Instance {
+    int32 replica = 1;
+    int32 slot = 2;
 }
 
-message Command {
-    oneof ClientRequest {
-        WriteRequest write_req = 1;
-        ReadRequest read_req = 2;
-    }
+message Payload {
+    WriteRequest write_req = 2;
     int32 seq = 3;
-    repeated Command deps = 4;
-    State state = 5;
+    repeated Instance deps = 4;
+    Instance instance = 5;
 }
 
-message PreAccept {
-    int32 replica_id = 1;
-    oneof ClientRequest {
-        WriteRequest write_req = 2;
-        ReadRequest read_req = 3;
-    }
-    int32 seq = 4;
-    repeated Command deps = 5;
-    int32 instance_number = 6;
+message AcceptOKPayload {
+    WriteRequest command = 1;
+    Instance instance = 4;
 }
 
-message PreAcceptOK {
-    int32 replica_id = 1;
-    oneof ClientRequest {
-        WriteRequest write_req = 2;
-        ReadRequest read_req = 3;
-    }
-    int32 seq = 4;
-    repeated Command deps = 5;
-    int32 instance_number = 6;
-}
-
-message Commit {
-    int32 replica_id = 1;
-    oneof ClientRequest {
-        WriteRequest write_req = 2;
-        ReadRequest read_req = 3;
-    }
-    int32 seq = 4;
-    repeated Command deps = 5;
-    int32 instance_number = 6;
-}
-
-message Empty {
-
-}
+message Empty {}
