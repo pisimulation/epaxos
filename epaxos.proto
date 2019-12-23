@@ -32,13 +32,13 @@ message ReadResponse {
 }
 
 message Instance {
-    int32 replica = 1;
-    int32 slot = 2;
+    uint32 replica = 1;
+    uint32 slot = 2;
 }
 
 message Payload {
     WriteRequest write_req = 2;
-    int32 seq = 3;
+    uint32 seq = 3;
     repeated Instance deps = 4;
     Instance instance = 5;
 }
