@@ -15,7 +15,7 @@ use std::{
     thread,
 };
 
-const QUORUM: usize = 2;
+const FAST_QUORUM: usize = 2;
 const REPLICAS_NUM: usize = 3;
 const LOCALHOST: &str = "127.0.0.1";
 static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
@@ -96,21 +96,23 @@ impl Epaxos {
         instance.set_slot(*self.instance_number.lock().unwrap());
         payload.set_instance(instance);
         payload.set_write_req(write_req.clone());
-        let interf = self.find_interference(write_req.get_key().to_owned());
+        let mut interf = self.find_interference(write_req.get_key().to_owned());
         payload.set_deps(interf.clone());
-        let seq = 1 + self.find_max_seq(&interf);
+        let mut seq = 1 + self.find_max_seq(&interf);
         payload.set_seq(seq);
         let log_entry = LogEntry {
             key: write_req.get_key().to_owned(),
             value: write_req.get_value(),
             seq: seq,
-            deps: interf,
+            deps: interf.clone(),
             state: State::PreAccepted,
         };
         (*self.cmds.lock().unwrap())[self.id.0 as usize].insert(slot as usize, log_entry);
         let mut fast_quorum = 1; // Leader votes for itself
-                                 // TODO: only send to set of fast quorum
-        for i in 0..REPLICAS_NUM {
+        let mut slow_path = false;
+        let mut fast_path = false;
+        // Send PreAccept message to replicas in Fast Quorum
+        for i in 0..FAST_QUORUM {
             if i == self.id.0 {
                 continue;
             }
@@ -120,7 +122,7 @@ impl Epaxos {
                 .unwrap()
                 .pre_accept(grpc::RequestOptions::new(), payload.clone());
             match pre_accept_ok.wait() {
-                Err(e) => panic!("Replica panic {:?}", e),
+                Err(e) => panic!("[PreAccept Stage] Replica panic {:?}", e),
                 Ok((_, value, _))
                     if value.get_seq() == payload.get_seq()
                         && value.get_deps() == payload.get_deps() =>
@@ -129,12 +131,53 @@ impl Epaxos {
                     fast_quorum += 1;
                 }
                 // TODO: slow path here
-                Ok((_, value, _)) => println!("Some dissenting voice here! {:?}", value),
+                Ok((_, value, _)) => {
+                    slow_path = true;
+                    println!("Some dissenting voice here! {:?}", value);
+                    // Union deps from all replies
+                    let mut new_deps = protobuf::RepeatedField::from_vec(value.get_deps().to_vec());
+                    for new_dep in new_deps.iter() {
+                        if !interf.contains(new_dep) {
+                            interf.push(new_dep.clone());
+                        }
+                    }
+                    // Set seq to max of seq from all replies
+                    if value.get_seq() > seq {
+                        seq = value.get_seq();
+                    }
+                    payload.set_deps(new_deps);
+                    payload.set_seq(seq);
+                }
             }
         }
 
+        if fast_quorum >= FAST_QUORUM {
+            fast_path = true;
+        }
+
+        if slow_path {
+            // Update the state of the command in the slot to Accepted
+            (*self.cmds.lock().unwrap())[self.id.0 as usize][slot as usize].state = State::Accepted;
+            // Run Paxos-Accept phase for new deps and new seq
+            // Send Accept message to at least floor(N/2) other replicas
+            let mut accept_ok_count = 0;
+            for i in 0..REPLICAS_NUM {
+                let accept_ok = (*self.replicas.lock().unwrap())
+                    .get(&ReplicaId(i))
+                    .unwrap()
+                    .accept(grpc::RequestOptions::new(), payload.clone());
+                match accept_ok.wait() {
+                    Err(e) => panic!("[Paxos-Accept Stage] Replica panic {:?}", e),
+                    Ok((_, value, _)) => {
+                        accept_ok_count += 1;
+                    }
+                }
+            }
+            fast_path = true;
+        }
+
         // Commit stage if has quorum
-        if fast_quorum >= QUORUM {
+        if fast_path {
             // Update the state in the log to commit
             (*self.cmds.lock().unwrap())[self.id.0 as usize][slot as usize].state =
                 State::Committed;
@@ -268,8 +311,23 @@ impl EpaxosInternal for Epaxos {
         o: grpc::RequestOptions,
         payload: Payload,
     ) -> grpc::SingleResponse<AcceptOKPayload> {
-        println!("accept");
+        println!(
+            "Replica {} received an Accept from {}\n",
+            self.id.0,
+            payload.get_instance().get_replica()
+        );
+        let log_entry = LogEntry {
+            key: payload.get_write_req().get_key().to_owned(),
+            value: payload.get_write_req().get_value(),
+            seq: payload.get_seq(),
+            deps: protobuf::RepeatedField::from_vec(payload.get_deps().to_vec()),
+            state: State::Accepted,
+        };
+        (*self.cmds.lock().unwrap())[payload.get_instance().get_replica() as usize]
+            [payload.get_instance().get_slot() as usize] = log_entry;
         let mut r = AcceptOKPayload::new();
+        r.set_command(payload.get_write_req().clone());
+        r.set_instance(payload.get_instance().clone());
         return grpc::SingleResponse::completed(r);
     }
     fn commit(&self, o: grpc::RequestOptions, payload: Payload) -> grpc::SingleResponse<Empty> {
