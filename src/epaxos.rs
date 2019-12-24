@@ -1613,26 +1613,25 @@ impl ::protobuf::reflect::ProtobufValue for Empty {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0cepaxos.proto\x12\x06epaxos\x1a\x1bgoogle/protobuf/empty.proto\"6\n\
-    \x0cWriteRequest\x12\x10\n\x03key\x18\x01\x20\x01(\tR\x03key\x12\x14\n\
-    \x05value\x18\x02\x20\x01(\x05R\x05value\"'\n\rWriteResponse\x12\x16\n\
-    \x06commit\x18\x01\x20\x01(\x08R\x06commit\"\x1f\n\x0bReadRequest\x12\
-    \x10\n\x03key\x18\x01\x20\x01(\tR\x03key\"$\n\x0cReadResponse\x12\x14\n\
-    \x05value\x18\x01\x20\x01(\x05R\x05value\"8\n\x08Instance\x12\x18\n\x07r\
-    eplica\x18\x01\x20\x01(\rR\x07replica\x12\x12\n\x04slot\x18\x02\x20\x01(\
-    \rR\x04slot\"\xa2\x01\n\x07Payload\x121\n\twrite_req\x18\x02\x20\x01(\
-    \x0b2\x14.epaxos.WriteRequestR\x08writeReq\x12\x10\n\x03seq\x18\x03\x20\
-    \x01(\rR\x03seq\x12$\n\x04deps\x18\x04\x20\x03(\x0b2\x10.epaxos.Instance\
-    R\x04deps\x12,\n\x08instance\x18\x05\x20\x01(\x0b2\x10.epaxos.InstanceR\
-    \x08instance\"o\n\x0fAcceptOKPayload\x12.\n\x07command\x18\x01\x20\x01(\
-    \x0b2\x14.epaxos.WriteRequestR\x07command\x12,\n\x08instance\x18\x04\x20\
-    \x01(\x0b2\x10.epaxos.InstanceR\x08instance\"\x07\n\x05Empty2\x9e\x01\n\
-    \x0eEpaxosInternal\x12.\n\npre_accept\x12\x0f.epaxos.Payload\x1a\x0f.epa\
-    xos.Payload\x122\n\x06accept\x12\x0f.epaxos.Payload\x1a\x17.epaxos.Accep\
-    tOKPayload\x12(\n\x06commit\x12\x0f.epaxos.Payload\x1a\r.epaxos.Empty2y\
-    \n\x0eEpaxosExternal\x124\n\x05write\x12\x14.epaxos.WriteRequest\x1a\x15\
-    .epaxos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadRequest\x1a\x14.\
-    epaxos.ReadResponseb\x06proto3\
+    \n\x0cepaxos.proto\x12\x06epaxos\"6\n\x0cWriteRequest\x12\x10\n\x03key\
+    \x18\x01\x20\x01(\tR\x03key\x12\x14\n\x05value\x18\x02\x20\x01(\x05R\x05\
+    value\"'\n\rWriteResponse\x12\x16\n\x06commit\x18\x01\x20\x01(\x08R\x06c\
+    ommit\"\x1f\n\x0bReadRequest\x12\x10\n\x03key\x18\x01\x20\x01(\tR\x03key\
+    \"$\n\x0cReadResponse\x12\x14\n\x05value\x18\x01\x20\x01(\x05R\x05value\
+    \"8\n\x08Instance\x12\x18\n\x07replica\x18\x01\x20\x01(\rR\x07replica\
+    \x12\x12\n\x04slot\x18\x02\x20\x01(\rR\x04slot\"\xa2\x01\n\x07Payload\
+    \x121\n\twrite_req\x18\x02\x20\x01(\x0b2\x14.epaxos.WriteRequestR\x08wri\
+    teReq\x12\x10\n\x03seq\x18\x03\x20\x01(\rR\x03seq\x12$\n\x04deps\x18\x04\
+    \x20\x03(\x0b2\x10.epaxos.InstanceR\x04deps\x12,\n\x08instance\x18\x05\
+    \x20\x01(\x0b2\x10.epaxos.InstanceR\x08instance\"o\n\x0fAcceptOKPayload\
+    \x12.\n\x07command\x18\x01\x20\x01(\x0b2\x14.epaxos.WriteRequestR\x07com\
+    mand\x12,\n\x08instance\x18\x04\x20\x01(\x0b2\x10.epaxos.InstanceR\x08in\
+    stance\"\x07\n\x05Empty2\x9e\x01\n\x0eEpaxosInternal\x12.\n\npre_accept\
+    \x12\x0f.epaxos.Payload\x1a\x0f.epaxos.Payload\x122\n\x06accept\x12\x0f.\
+    epaxos.Payload\x1a\x17.epaxos.AcceptOKPayload\x12(\n\x06commit\x12\x0f.e\
+    paxos.Payload\x1a\r.epaxos.Empty2y\n\x0eEpaxosExternal\x124\n\x05write\
+    \x12\x14.epaxos.WriteRequest\x1a\x15.epaxos.WriteResponse\x121\n\x04read\
+    \x12\x13.epaxos.ReadRequest\x1a\x14.epaxos.ReadResponseb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

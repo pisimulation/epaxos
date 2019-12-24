@@ -15,8 +15,9 @@ use std::{
     thread,
 };
 
-const FAST_QUORUM: usize = 2;
-const REPLICAS_NUM: usize = 3;
+const SLOW_QUORUM: usize = 3; // floor(N/2)
+const FAST_QUORUM: usize = 3; // 1 + floor(F+1/2)
+const REPLICAS_NUM: usize = 5;
 const LOCALHOST: &str = "127.0.0.1";
 static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
 static REPLICA_EXTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
@@ -87,7 +88,7 @@ impl Epaxos {
     }
 
     // we only need to do consensus for write req
-    fn consensus(&self, write_req: &WriteRequest) {
+    fn consensus(&self, write_req: &WriteRequest) -> bool {
         println!("Starting consensus");
         let slot = *self.instance_number.lock().unwrap();
         let mut payload = Payload::new();
@@ -173,7 +174,9 @@ impl Epaxos {
                     }
                 }
             }
-            fast_path = true;
+            if accept_ok_count >= SLOW_QUORUM {
+                fast_path = true;
+            }
         }
 
         // Commit stage if has quorum
@@ -193,9 +196,12 @@ impl Epaxos {
                     .commit(grpc::RequestOptions::new(), payload.clone());
                 println!("Sending Commit to replica {}", i);
             }
+            *self.instance_number.lock().unwrap() += 1;
+            return true;
         }
+        println!("Consensus failed.");
+        return false;
         // TODO: how to wait for replies w/o blocking
-        *self.instance_number.lock().unwrap() += 1;
     }
 
     fn find_max_seq(&self, interf: &protobuf::RepeatedField<Instance>) -> u32 {
@@ -243,12 +249,16 @@ impl EpaxosExternal for Epaxos {
             req.get_key(),
             req.get_value()
         );
-        self.consensus(&req);
-        // TODO when do I actually execute?
-        (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
-        println!("Consensus successful. Sending a commit to client.");
         let mut r = WriteResponse::new();
-        r.set_commit(true);
+        if self.consensus(&req) {
+            // TODO when do I actually execute?
+            (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
+            println!("Consensus successful. Sending a commit to client.");
+            r.set_commit(true);
+        } else {
+            println!("Consensus failed. Notifying client.");
+            r.set_commit(false);
+        }
         grpc::SingleResponse::completed(r)
     }
     fn read(
@@ -330,6 +340,7 @@ impl EpaxosInternal for Epaxos {
         r.set_instance(payload.get_instance().clone());
         return grpc::SingleResponse::completed(r);
     }
+
     fn commit(&self, o: grpc::RequestOptions, payload: Payload) -> grpc::SingleResponse<Empty> {
         println!(
             "Replica {} received a Commit from {}\n
