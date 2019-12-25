@@ -17,7 +17,7 @@ use std::{
 
 const SLOW_QUORUM: usize = 3; // floor(N/2)
 const FAST_QUORUM: usize = 3; // 1 + floor(F+1/2)
-const REPLICAS_NUM: usize = 6;
+const REPLICAS_NUM: usize = 5;
 const LOCALHOST: &str = "127.0.0.1";
 static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004, 10005];
 static REPLICA_EXTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004, 10005];
@@ -118,13 +118,21 @@ impl Epaxos {
         let mut slow_path = false;
         let mut fast_path = false;
         // Send PreAccept message to replicas in Fast Quorum
-        for i in 0..FAST_QUORUM {
-            if i == self.id.0 {
-                continue;
+        for i in 1..FAST_QUORUM {
+            // if i == self.id.0 {
+            //     continue;
+            // }
+            let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
+            if quorum_member == self.id.0 as i32 {
+                println!("!!");
+                quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
             }
-            println!("Sending pre_accept to replica {}", i);
+            println!(
+                "Replica {} Sending pre_accept to replica {}",
+                self.id.0, quorum_member
+            );
             let pre_accept_ok = (*self.replicas.lock().unwrap())
-                .get(&ReplicaId(i))
+                .get(&ReplicaId(quorum_member as usize))
                 .unwrap()
                 .pre_accept(grpc::RequestOptions::new(), payload.clone());
             match pre_accept_ok.wait() {
@@ -141,7 +149,7 @@ impl Epaxos {
                     slow_path = true;
                     println!("Some dissenting voice here! {:?}", value);
                     // Union deps from all replies
-                    let mut new_deps = protobuf::RepeatedField::from_vec(value.get_deps().to_vec());
+                    let new_deps = protobuf::RepeatedField::from_vec(value.get_deps().to_vec());
                     for new_dep in new_deps.iter() {
                         if !interf.contains(new_dep) {
                             interf.push(new_dep.clone());
@@ -151,7 +159,10 @@ impl Epaxos {
                     if value.get_seq() > seq {
                         seq = value.get_seq();
                     }
-                    payload.set_deps(new_deps);
+                    log_entry.deps = interf.clone();
+                    (*self.cmds.lock().unwrap())[self.id.0]
+                        .insert(slot as usize, log_entry.clone());
+                    payload.set_deps(interf.clone());
                     payload.set_seq(seq);
                 }
             }
@@ -167,18 +178,29 @@ impl Epaxos {
             (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry.clone());
             // Run Paxos-Accept phase for new deps and new seq
             // Send Accept message to at least floor(N/2) other replicas
-            let mut accept_ok_count = 0;
-            for i in 0..REPLICAS_NUM {
-                if i == self.id.0 {
-                    continue;
+            let mut accept_ok_count = 1;
+            //for i in 0..REPLICAS_NUM {
+            for i in 1..FAST_QUORUM {
+                // if i == self.id.0 {
+                //     continue;
+                // }
+                let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
+                if quorum_member == self.id.0 as i32 {
+                    println!("!!");
+                    quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
                 }
+                println!(
+                    "Replica {} sending ACCEPT to replica {}",
+                    self.id.0, quorum_member
+                );
                 let accept_ok = (*self.replicas.lock().unwrap())
-                    .get(&ReplicaId(i))
+                    .get(&ReplicaId(quorum_member as usize))
                     .unwrap()
                     .accept(grpc::RequestOptions::new(), payload.clone());
                 match accept_ok.wait() {
                     Err(e) => panic!("[Paxos-Accept Stage] Replica panic {:?}", e),
                     Ok((_, value, _)) => {
+                        println!("[Paxos-Accept Stage] got {:?}", value);
                         accept_ok_count += 1;
                     }
                 }
@@ -195,12 +217,17 @@ impl Epaxos {
             (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry);
 
             // Send Commit message to all replicas
-            for i in 0..REPLICAS_NUM {
-                if i == self.id.0 {
-                    continue;
+            for i in 1..FAST_QUORUM {
+                // if i == self.id.0 {
+                //     continue;
+                // }
+                let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
+                if quorum_member == self.id.0 as i32 {
+                    println!("!!");
+                    quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
                 }
                 (*self.replicas.lock().unwrap())
-                    .get(&ReplicaId(i))
+                    .get(&ReplicaId(quorum_member as usize))
                     .unwrap()
                     .commit(grpc::RequestOptions::new(), payload.clone());
                 println!("Sending Commit to replica {}", i);
@@ -229,7 +256,7 @@ impl Epaxos {
     }
 
     fn find_interference(&self, key: String) -> protobuf::RepeatedField<Instance> {
-        //println!("Finding interf");
+        println!("Finding interf");
         let mut interf = protobuf::RepeatedField::new();
         for replica in 0..REPLICAS_NUM {
             for (slot, log_entry) in (*self.cmds.lock().unwrap())[replica].iter() {
@@ -241,6 +268,7 @@ impl Epaxos {
                 }
             }
         }
+        println!("Found interf : {:?}", interf);
         return interf;
     }
 
@@ -264,7 +292,7 @@ impl EpaxosExternal for Epaxos {
         if self.consensus(&req) {
             // TODO when do I actually execute?
             (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
-            println!("Consensus successful. Sending a commit to client.");
+            println!("Consensus successful. Sending a commit to client\n\n\n\n.");
             r.set_commit(true);
         } else {
             println!("Consensus failed. Notifying client.");
@@ -317,7 +345,7 @@ impl EpaxosExternal for Epaxos {
             key: key.to_owned(),
             value: payload.get_write_req().get_value(),
             seq: seq,
-            deps: interf,
+            deps: deps.clone(),
             state: State::PreAccepted,
         };
         (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(slot as usize, log_entry);
