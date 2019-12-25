@@ -22,10 +22,10 @@ const LOCALHOST: &str = "127.0.0.1";
 static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
 static REPLICA_EXTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct ReplicaId(usize);
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum State {
     PreAccepted,
     Accepted,
@@ -38,12 +38,12 @@ struct Epaxos {
     // See https://github.com/stepancheg/grpc-rust/blob/master/docs/FAQ.md
     id: ReplicaId,
     store: Arc<Mutex<HashMap<String, i32>>>,
-    cmds: Arc<Mutex<Vec<Vec<LogEntry>>>>, // vectors are growable arrays
+    cmds: Arc<Mutex<Vec<HashMap<usize, LogEntry>>>>, // vectors are growable arrays
     instance_number: Arc<Mutex<u32>>,
     replicas: Arc<Mutex<HashMap<ReplicaId, EpaxosInternalClient>>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct LogEntry {
     key: String,
     value: i32,
@@ -64,18 +64,22 @@ impl Epaxos {
         let mut replicas = HashMap::new();
 
         for i in 0..REPLICAS_NUM {
-            commands.push(Vec::new());
-
-            if i != id.0 {
-                let internal_client = grpc::Client::new_plain(
-                    LOCALHOST,
-                    REPLICA_INTERNAL_PORTS[i as usize],
-                    Default::default(),
-                )
-                .unwrap();
-                let replica = EpaxosInternalClient::with_client(Arc::new(internal_client));
-                replicas.insert(ReplicaId(i), replica);
+            commands.insert(i, HashMap::new());
+            if i == id.0 {
+                continue;
             }
+            let internal_client = grpc::Client::new_plain(
+                LOCALHOST,
+                REPLICA_INTERNAL_PORTS[i as usize],
+                Default::default(),
+            )
+            .unwrap();
+            println!(
+                "Replica {} created : {:?}",
+                i, REPLICA_INTERNAL_PORTS[i as usize]
+            );
+            let replica = EpaxosInternalClient::with_client(Arc::new(internal_client));
+            replicas.insert(ReplicaId(i), replica);
         }
 
         return Epaxos {
@@ -89,6 +93,7 @@ impl Epaxos {
 
     // we only need to do consensus for write req
     fn consensus(&self, write_req: &WriteRequest) -> bool {
+        println!("===============");
         println!("Starting consensus");
         let slot = *self.instance_number.lock().unwrap();
         let mut payload = Payload::new();
@@ -101,14 +106,14 @@ impl Epaxos {
         payload.set_deps(interf.clone());
         let mut seq = 1 + self.find_max_seq(&interf);
         payload.set_seq(seq);
-        let log_entry = LogEntry {
+        let mut log_entry = LogEntry {
             key: write_req.get_key().to_owned(),
             value: write_req.get_value(),
             seq: seq,
             deps: interf.clone(),
             state: State::PreAccepted,
         };
-        (*self.cmds.lock().unwrap())[self.id.0 as usize].insert(slot as usize, log_entry);
+        (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry.clone());
         let mut fast_quorum = 1; // Leader votes for itself
         let mut slow_path = false;
         let mut fast_path = false;
@@ -157,12 +162,16 @@ impl Epaxos {
         }
 
         if slow_path {
+            log_entry.state = State::Accepted;
             // Update the state of the command in the slot to Accepted
-            (*self.cmds.lock().unwrap())[self.id.0 as usize][slot as usize].state = State::Accepted;
+            (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry.clone());
             // Run Paxos-Accept phase for new deps and new seq
             // Send Accept message to at least floor(N/2) other replicas
             let mut accept_ok_count = 0;
             for i in 0..REPLICAS_NUM {
+                if i == self.id.0 {
+                    continue;
+                }
                 let accept_ok = (*self.replicas.lock().unwrap())
                     .get(&ReplicaId(i))
                     .unwrap()
@@ -182,8 +191,8 @@ impl Epaxos {
         // Commit stage if has quorum
         if fast_path {
             // Update the state in the log to commit
-            (*self.cmds.lock().unwrap())[self.id.0 as usize][slot as usize].state =
-                State::Committed;
+            log_entry.state = State::Committed;
+            (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry);
 
             // Send Commit message to all replicas
             for i in 0..REPLICAS_NUM {
@@ -197,6 +206,7 @@ impl Epaxos {
                 println!("Sending Commit to replica {}", i);
             }
             *self.instance_number.lock().unwrap() += 1;
+            println!("My log is {:?}", *self.cmds.lock().unwrap());
             return true;
         }
         println!("Consensus failed.");
@@ -208,7 +218,8 @@ impl Epaxos {
         let mut seq = 0;
         for instance in interf {
             let interf_seq = (*self.cmds.lock().unwrap())[instance.get_replica() as usize]
-                [instance.get_slot() as usize]
+                .get(&(instance.get_slot() as usize))
+                .unwrap()
                 .seq;
             if interf_seq > seq {
                 seq = interf_seq;
@@ -218,14 +229,14 @@ impl Epaxos {
     }
 
     fn find_interference(&self, key: String) -> protobuf::RepeatedField<Instance> {
-        println!("Finding interf");
+        //println!("Finding interf");
         let mut interf = protobuf::RepeatedField::new();
         for replica in 0..REPLICAS_NUM {
-            for (slot, log_entry) in (*self.cmds.lock().unwrap()[replica]).iter().enumerate() {
+            for (slot, log_entry) in (*self.cmds.lock().unwrap())[replica].iter() {
                 if log_entry.key == key {
                     let mut instance = Instance::new();
                     instance.set_replica(replica as u32);
-                    instance.set_slot(slot as u32);
+                    instance.set_slot(*slot as u32);
                     interf.push(instance);
                 }
             }
@@ -280,6 +291,7 @@ impl EpaxosInternal for Epaxos {
         o: grpc::RequestOptions,
         payload: Payload,
     ) -> grpc::SingleResponse<Payload> {
+        println!("=====PRE==ACCEPT========");
         println!(
             "Replica {} received a PreAccept from {}\n
             Write Key: {}, value: {}",
@@ -313,6 +325,7 @@ impl EpaxosInternal for Epaxos {
         let mut r = payload.clone();
         r.set_seq(seq);
         r.set_deps(deps.clone());
+        println!("===============");
         return grpc::SingleResponse::completed(r);
     }
 
@@ -321,11 +334,14 @@ impl EpaxosInternal for Epaxos {
         o: grpc::RequestOptions,
         payload: Payload,
     ) -> grpc::SingleResponse<AcceptOKPayload> {
+        println!("=======ACCEPT========");
         println!(
             "Replica {} received an Accept from {}\n",
             self.id.0,
             payload.get_instance().get_replica()
         );
+        let sending_replica_id = payload.get_instance().get_replica();
+        let slot = payload.get_instance().get_slot();
         let log_entry = LogEntry {
             key: payload.get_write_req().get_key().to_owned(),
             value: payload.get_write_req().get_value(),
@@ -333,15 +349,16 @@ impl EpaxosInternal for Epaxos {
             deps: protobuf::RepeatedField::from_vec(payload.get_deps().to_vec()),
             state: State::Accepted,
         };
-        (*self.cmds.lock().unwrap())[payload.get_instance().get_replica() as usize]
-            [payload.get_instance().get_slot() as usize] = log_entry;
+        (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(slot as usize, log_entry);
         let mut r = AcceptOKPayload::new();
         r.set_command(payload.get_write_req().clone());
         r.set_instance(payload.get_instance().clone());
+        println!("===============");
         return grpc::SingleResponse::completed(r);
     }
 
     fn commit(&self, o: grpc::RequestOptions, payload: Payload) -> grpc::SingleResponse<Empty> {
+        println!("======COMMIT=========");
         println!(
             "Replica {} received a Commit from {}\n
             Write Key: {}, value: {}",
@@ -350,13 +367,21 @@ impl EpaxosInternal for Epaxos {
             payload.get_write_req().get_key(),
             payload.get_write_req().get_value()
         );
+        let sending_replica_id = payload.get_instance().get_replica();
+        let slot = payload.get_instance().get_slot();
+        let log_entry = LogEntry {
+            key: payload.get_write_req().get_key().to_owned(),
+            value: payload.get_write_req().get_value(),
+            seq: payload.get_seq(),
+            deps: protobuf::RepeatedField::from_vec(payload.get_deps().to_vec()),
+            state: State::Committed,
+        };
         // Update the state in the log to commit
-        (*self.cmds.lock().unwrap())[payload.get_instance().get_replica() as usize]
-            [payload.get_instance().get_slot() as usize]
-            .state = State::Committed;
-        println!("My log is {:?}", *self.cmds.lock().unwrap());
 
-        let mut r = Empty::new();
+        (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(slot as usize, log_entry);
+        println!("My log is {:?}", *self.cmds.lock().unwrap());
+        println!("===============");
+        let r = Empty::new();
         return grpc::SingleResponse::completed(r);
     }
 }
