@@ -48,9 +48,12 @@ struct LogEntry {
     key: String,
     value: i32,
     seq: u32,
-    deps: protobuf::RepeatedField<Instance>,
+    deps: Vec<Instance>,
     state: State,
 }
+
+// TODO be careful of deadlocks, acquire in order pls
+// avoid recursive locking (locking twice in same thread)
 
 #[derive(Debug)]
 struct CommandInstance {
@@ -99,11 +102,11 @@ impl Epaxos {
         let mut payload = Payload::new();
         let mut instance = Instance::new();
         instance.set_replica(self.id.0 as u32);
-        instance.set_slot(*self.instance_number.lock().unwrap());
+        instance.set_slot(slot);
         payload.set_instance(instance);
         payload.set_write_req(write_req.clone());
         let mut interf = self.find_interference(write_req.get_key().to_owned());
-        payload.set_deps(interf.clone());
+        payload.set_deps(protobuf::RepeatedField::from_vec(interf.clone()));
         let mut seq = 1 + self.find_max_seq(&interf);
         payload.set_seq(seq);
         let mut log_entry = LogEntry {
@@ -135,6 +138,9 @@ impl Epaxos {
                 .get(&ReplicaId(quorum_member as usize))
                 .unwrap()
                 .pre_accept(grpc::RequestOptions::new(), payload.clone());
+            //TODO: thread::spawn(move || {
+
+            // });
             match pre_accept_ok.wait() {
                 Err(e) => panic!("[PreAccept Stage] Replica panic {:?}", e),
                 Ok((_, value, _))
@@ -162,7 +168,7 @@ impl Epaxos {
                     log_entry.deps = interf.clone();
                     (*self.cmds.lock().unwrap())[self.id.0]
                         .insert(slot as usize, log_entry.clone());
-                    payload.set_deps(interf.clone());
+                    payload.set_deps(protobuf::RepeatedField::from_vec(interf.clone()));
                     payload.set_seq(seq);
                 }
             }
@@ -241,7 +247,7 @@ impl Epaxos {
         // TODO: how to wait for replies w/o blocking
     }
 
-    fn find_max_seq(&self, interf: &protobuf::RepeatedField<Instance>) -> u32 {
+    fn find_max_seq(&self, interf: &Vec<Instance>) -> u32 {
         let mut seq = 0;
         for instance in interf {
             let interf_seq = (*self.cmds.lock().unwrap())[instance.get_replica() as usize]
@@ -255,9 +261,9 @@ impl Epaxos {
         return seq;
     }
 
-    fn find_interference(&self, key: String) -> protobuf::RepeatedField<Instance> {
+    fn find_interference(&self, key: String) -> Vec<Instance> {
         println!("Finding interf");
-        let mut interf = protobuf::RepeatedField::new();
+        let mut interf = Vec::new();
         for replica in 0..REPLICAS_NUM {
             for (slot, log_entry) in (*self.cmds.lock().unwrap())[replica].iter() {
                 if log_entry.key == key {
@@ -269,7 +275,7 @@ impl Epaxos {
             }
         }
         println!("Found interf : {:?}", interf);
-        return interf;
+        interf
     }
 
     fn execute(&self) {
@@ -334,7 +340,7 @@ impl EpaxosExternal for Epaxos {
         let interf = self.find_interference(key.to_owned());
         let seq = cmp::max(payload.get_seq(), 1 + self.find_max_seq(&interf));
         // Union interf with deps
-        let mut deps = protobuf::RepeatedField::from_vec(payload.get_deps().to_vec());
+        let mut deps = payload.get_deps().to_vec();
         for interf_command in interf.iter() {
             if !deps.contains(interf_command) {
                 deps.push(interf_command.clone());
@@ -352,7 +358,7 @@ impl EpaxosExternal for Epaxos {
 
         let mut r = payload.clone();
         r.set_seq(seq);
-        r.set_deps(deps.clone());
+        r.set_deps(protobuf::RepeatedField::from_vec(deps.clone()));
         println!("===============");
         return grpc::SingleResponse::completed(r);
     }
@@ -374,7 +380,7 @@ impl EpaxosExternal for Epaxos {
             key: payload.get_write_req().get_key().to_owned(),
             value: payload.get_write_req().get_value(),
             seq: payload.get_seq(),
-            deps: protobuf::RepeatedField::from_vec(payload.get_deps().to_vec()),
+            deps: payload.get_deps().to_vec(),
             state: State::Accepted,
         };
         (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(slot as usize, log_entry);
@@ -401,7 +407,7 @@ impl EpaxosExternal for Epaxos {
             key: payload.get_write_req().get_key().to_owned(),
             value: payload.get_write_req().get_value(),
             seq: payload.get_seq(),
-            deps: protobuf::RepeatedField::from_vec(payload.get_deps().to_vec()),
+            deps: payload.get_deps().to_vec(),
             state: State::Committed,
         };
         // Update the state in the log to commit
