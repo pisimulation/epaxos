@@ -17,10 +17,10 @@ use std::{
 
 const SLOW_QUORUM: usize = 3; // floor(N/2)
 const FAST_QUORUM: usize = 3; // 1 + floor(F+1/2)
-const REPLICAS_NUM: usize = 5;
+const REPLICAS_NUM: usize = 6;
 const LOCALHOST: &str = "127.0.0.1";
-static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
-static REPLICA_EXTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004];
+static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004, 10005];
+static REPLICA_EXTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004, 10005];
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct ReplicaId(usize);
@@ -40,7 +40,7 @@ struct Epaxos {
     store: Arc<Mutex<HashMap<String, i32>>>,
     cmds: Arc<Mutex<Vec<HashMap<usize, LogEntry>>>>, // vectors are growable arrays
     instance_number: Arc<Mutex<u32>>,
-    replicas: Arc<Mutex<HashMap<ReplicaId, EpaxosInternalClient>>>,
+    replicas: Arc<Mutex<HashMap<ReplicaId, EpaxosExternalClient>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -78,7 +78,7 @@ impl Epaxos {
                 "Replica {} created : {:?}",
                 i, REPLICA_INTERNAL_PORTS[i as usize]
             );
-            let replica = EpaxosInternalClient::with_client(Arc::new(internal_client));
+            let replica = EpaxosExternalClient::with_client(Arc::new(internal_client));
             replicas.insert(ReplicaId(i), replica);
         }
 
@@ -283,9 +283,9 @@ impl EpaxosExternal for Epaxos {
         r.set_value(*((*self.store.lock().unwrap()).get(req.get_key())).unwrap());
         grpc::SingleResponse::completed(r)
     }
-}
+    // }
 
-impl EpaxosInternal for Epaxos {
+    // impl EpaxosInternal for Epaxos {
     fn pre_accept(
         &self,
         o: grpc::RequestOptions,
@@ -396,9 +396,9 @@ fn main() {
     server_builder1.add_service(EpaxosExternalServer::new_service_def(Epaxos::init(
         ReplicaId(id as usize),
     )));
-    server_builder1.add_service(EpaxosInternalServer::new_service_def(Epaxos::init(
-        ReplicaId(id as usize),
-    )));
+    // server_builder1.add_service(EpaxosInternalServer::new_service_def(Epaxos::init(
+    //     ReplicaId(id as usize),
+    // )));
     server_builder1.http.set_port(internal_port);
     let server1 = server_builder1.build().expect("build");
     println!("server started on addr {}", server1.local_addr());

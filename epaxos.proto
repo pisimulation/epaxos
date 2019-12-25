@@ -2,13 +2,16 @@ syntax = "proto3";
 
 package epaxos;
 
-service EpaxosInternal {
+// service EpaxosInternal {
+//     rpc pre_accept(Payload) returns (Payload);
+//     rpc accept(Payload) returns (AcceptOKPayload);
+//     rpc commit(Payload) returns (Empty);
+// }
+
+service EpaxosExternal {
     rpc pre_accept(Payload) returns (Payload);
     rpc accept(Payload) returns (AcceptOKPayload);
     rpc commit(Payload) returns (Empty);
-}
-
-service EpaxosExternal {
     rpc write(WriteRequest) returns (WriteResponse);
     rpc read(ReadRequest) returns (ReadResponse);
 }

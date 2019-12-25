@@ -1626,12 +1626,12 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x20\x01(\x0b2\x10.epaxos.InstanceR\x08instance\"o\n\x0fAcceptOKPayload\
     \x12.\n\x07command\x18\x01\x20\x01(\x0b2\x14.epaxos.WriteRequestR\x07com\
     mand\x12,\n\x08instance\x18\x04\x20\x01(\x0b2\x10.epaxos.InstanceR\x08in\
-    stance\"\x07\n\x05Empty2\x9e\x01\n\x0eEpaxosInternal\x12.\n\npre_accept\
+    stance\"\x07\n\x05Empty2\x87\x02\n\x0eEpaxosExternal\x12.\n\npre_accept\
     \x12\x0f.epaxos.Payload\x1a\x0f.epaxos.Payload\x122\n\x06accept\x12\x0f.\
     epaxos.Payload\x1a\x17.epaxos.AcceptOKPayload\x12(\n\x06commit\x12\x0f.e\
-    paxos.Payload\x1a\r.epaxos.Empty2y\n\x0eEpaxosExternal\x124\n\x05write\
-    \x12\x14.epaxos.WriteRequest\x1a\x15.epaxos.WriteResponse\x121\n\x04read\
-    \x12\x13.epaxos.ReadRequest\x1a\x14.epaxos.ReadResponseb\x06proto3\
+    paxos.Payload\x1a\r.epaxos.Empty\x124\n\x05write\x12\x14.epaxos.WriteReq\
+    uest\x1a\x15.epaxos.WriteResponse\x121\n\x04read\x12\x13.epaxos.ReadRequ\
+    est\x1a\x14.epaxos.ReadResponseb\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
