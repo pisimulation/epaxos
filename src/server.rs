@@ -1,9 +1,11 @@
+extern crate crossbeam;
 extern crate futures;
 extern crate futures_cpupool;
 extern crate grpc;
 extern crate protobuf;
 extern crate sharedlib;
 
+use crossbeam::thread as crossbeam_thread;
 use grpc::ClientStub;
 use sharedlib::epaxos as grpc_service;
 use sharedlib::epaxos_grpc::{EpaxosExternal, EpaxosExternalClient, EpaxosExternalServer};
@@ -25,7 +27,7 @@ struct Epaxos {
     // See https://github.com/stepancheg/grpc-rust/blob/master/docs/FAQ.md
     id: ReplicaId,
     store: Arc<Mutex<HashMap<String, i32>>>,
-    cmds: Arc<Mutex<Vec<HashMap<usize, LogEntry>>>>, // vectors are growable arrays
+    cmds: Arc<Mutex<Vec<HashMap<usize, LogEntry>>>>,
     instance_number: Arc<Mutex<u32>>,
     replicas: Arc<Mutex<HashMap<ReplicaId, EpaxosExternalClient>>>,
 }
@@ -103,47 +105,49 @@ impl Epaxos {
                 "Replica {} Sending pre_accept to replica {}",
                 self.id.0, quorum_member
             );
-            let pre_accept_ok = (*self.replicas.lock().unwrap())
-                .get(&ReplicaId(quorum_member as usize))
-                .unwrap()
-                .pre_accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
-            //TODO: thread::spawn(move || {
-
-            // });
-            match pre_accept_ok.wait() {
-                Err(e) => panic!("[PreAccept Stage] Replica panic {:?}", e),
-                Ok((_, value, _))
-                    if value.get_seq() == payload.seq
-                        && value.get_deps() == to_grpc_payload(&payload).get_deps() =>
-                {
-                    println!("Got an agreeing PreAcceptOK: {:?}", value);
-                    fast_quorum += 1;
-                }
-                // TODO: slow path here
-                Ok((_, value, _)) => {
-                    slow_path = true;
-                    println!("Some dissenting voice here! {:?}", value);
-                    // Union deps from all replies
-                    let mut new_deps = value
-                        .get_deps()
-                        .to_vec()
-                        .iter()
-                        .map(from_grpc_instance)
-                        .collect();
-                    interf.append(&mut new_deps);
-                    interf.sort_by(sort_instances);
-                    interf.dedup();
-                    // Set seq to max of seq from all replies
-                    if value.get_seq() > seq {
-                        seq = value.get_seq();
+            crossbeam_thread::scope(|s| {
+                s.spawn(|_| {
+                    let pre_accept_ok = (*self.replicas.lock().unwrap())
+                        .get(&ReplicaId(quorum_member as usize))
+                        .unwrap()
+                        .pre_accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
+                    match pre_accept_ok.wait() {
+                        Err(e) => panic!("[PreAccept Stage] Replica panic {:?}", e),
+                        Ok((_, value, _))
+                            if value.get_seq() == payload.seq
+                                && value.get_deps() == to_grpc_payload(&payload).get_deps() =>
+                        {
+                            println!("Got an agreeing PreAcceptOK: {:?}", value);
+                            fast_quorum += 1;
+                        }
+                        // TODO: slow path here
+                        Ok((_, value, _)) => {
+                            slow_path = true;
+                            println!("Some dissenting voice here! {:?}", value);
+                            // Union deps from all replies
+                            let mut new_deps = value
+                                .get_deps()
+                                .to_vec()
+                                .iter()
+                                .map(from_grpc_instance)
+                                .collect();
+                            interf.append(&mut new_deps);
+                            interf.sort_by(sort_instances);
+                            interf.dedup();
+                            // Set seq to max of seq from all replies
+                            if value.get_seq() > seq {
+                                seq = value.get_seq();
+                            }
+                            log_entry.deps = interf.clone();
+                            (*self.cmds.lock().unwrap())[self.id.0]
+                                .insert(slot as usize, log_entry.clone());
+                            payload.deps = interf.clone();
+                            payload.seq = seq;
+                        }
                     }
-                    log_entry.deps = interf.clone();
-                    (*self.cmds.lock().unwrap())[self.id.0]
-                        .insert(slot as usize, log_entry.clone());
-                    payload.deps = interf.clone();
-                    payload.seq = seq;
-                }
-            }
+                });
+            })
+            .unwrap();
         }
 
         if fast_quorum >= FAST_QUORUM {
@@ -247,7 +251,7 @@ impl Epaxos {
                 }
             }
         }
-        println!("Found interf : {:?}", interf);
+        println!(">> Found interf : {:?}", interf);
         interf
     }
 
@@ -422,7 +426,7 @@ fn main() {
     )));
     server_builder1.http.set_port(port);
     let server1 = server_builder1.build().expect("build");
-    println!("server started on addr {}", server1.local_addr());
+    println!(">> Me {}", server1.local_addr());
 
     // Blocks the main thread forever
     loop {
