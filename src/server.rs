@@ -10,7 +10,7 @@ use sharedlib::epaxos_grpc::{EpaxosExternal, EpaxosExternalClient, EpaxosExterna
 use sharedlib::util::*;
 use std::{
     cmp,
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     env,
     sync::{Arc, Mutex},
     thread,
@@ -34,7 +34,7 @@ impl Epaxos {
     fn init(id: ReplicaId) -> Epaxos {
         let mut commands = Vec::new();
         let mut replicas = HashMap::new();
-
+        println!("Initializing Replica {}", id.0);
         for i in 0..REPLICAS_NUM {
             commands.insert(i, HashMap::new());
             if i == id.0 {
@@ -47,25 +47,24 @@ impl Epaxos {
             )
             .unwrap();
             println!(
-                "Replica {} created : {:?}",
+                ">> Neighbor replica {} created : {:?}",
                 i, REPLICA_INTERNAL_PORTS[i as usize]
             );
             let replica = EpaxosExternalClient::with_client(Arc::new(internal_client));
             replicas.insert(ReplicaId(i), replica);
         }
 
-        return Epaxos {
+        Epaxos {
             id: id.clone(),
             store: Arc::new(Mutex::new(HashMap::new())),
             cmds: Arc::new(Mutex::new(commands)),
             instance_number: Arc::new(Mutex::new(0)),
             replicas: Arc::new(Mutex::new(replicas)),
-        };
+        }
     }
 
     // we only need to do consensus for write req
     fn consensus(&self, write_req: &WriteRequest) -> bool {
-        println!("===============");
         println!("Starting consensus");
         let slot = *self.instance_number.lock().unwrap();
         let mut interf = self.find_interference(write_req.key.to_owned());
@@ -125,12 +124,15 @@ impl Epaxos {
                     slow_path = true;
                     println!("Some dissenting voice here! {:?}", value);
                     // Union deps from all replies
-                    let new_deps = protobuf::RepeatedField::from_vec(value.get_deps().to_vec());
-                    for new_dep in new_deps.iter() {
-                        if !interf.contains(&from_grpc_instance(new_dep)) {
-                            interf.push(from_grpc_instance(&new_dep.clone()));
-                        }
-                    }
+                    let mut new_deps = value
+                        .get_deps()
+                        .to_vec()
+                        .iter()
+                        .map(from_grpc_instance)
+                        .collect();
+                    interf.append(&mut new_deps);
+                    interf.sort_by(sort_instances);
+                    interf.dedup();
                     // Set seq to max of seq from all replies
                     if value.get_seq() > seq {
                         seq = value.get_seq();
@@ -228,7 +230,7 @@ impl Epaxos {
                 seq = interf_seq;
             }
         }
-        return seq;
+        seq
     }
 
     fn find_interference(&self, key: String) -> Vec<Instance> {
@@ -237,7 +239,7 @@ impl Epaxos {
         for replica in 0..REPLICAS_NUM {
             for (slot, log_entry) in (*self.cmds.lock().unwrap())[replica].iter() {
                 if log_entry.key == key {
-                    let mut instance = Instance {
+                    let instance = Instance {
                         replica: replica,
                         slot: *slot,
                     };
@@ -293,7 +295,7 @@ impl EpaxosExternal for Epaxos {
     // impl EpaxosInternal for Epaxos {
     fn pre_accept(
         &self,
-        o: grpc::RequestOptions,
+        _o: grpc::RequestOptions,
         payload: grpc_service::Payload,
     ) -> grpc::SingleResponse<grpc_service::Payload> {
         println!("=====PRE==ACCEPT========");
@@ -311,32 +313,37 @@ impl EpaxosExternal for Epaxos {
         let interf = self.find_interference(key.to_owned());
         let seq = cmp::max(payload.get_seq(), 1 + self.find_max_seq(&interf));
         // Union interf with deps
-        let mut deps = payload.get_deps().to_vec();
-        for interf_command in interf.iter() {
-            if !deps.contains(&to_grpc_instance(interf_command)) {
-                deps.push(to_grpc_instance(&interf_command.clone()));
-            }
-        }
+        let mut deps: Vec<Instance> = payload
+            .get_deps()
+            .to_vec()
+            .iter()
+            .map(from_grpc_instance)
+            .collect();
+        deps.append(&mut interf.clone());
+        deps.sort_by(sort_instances);
+        deps.dedup();
         // Add to cmd log
         let log_entry = LogEntry {
             key: key.to_owned(),
             value: payload.get_write_req().get_value(),
             seq: seq,
-            deps: deps.clone().iter().map(from_grpc_instance).collect(),
+            deps: deps.clone(),
             state: State::PreAccepted,
         };
         (*self.cmds.lock().unwrap())[sending_replica_id as usize].insert(slot as usize, log_entry);
 
         let mut r = payload.clone();
         r.set_seq(seq);
-        r.set_deps(protobuf::RepeatedField::from_vec(deps.clone()));
+        r.set_deps(protobuf::RepeatedField::from_vec(
+            deps.clone().iter().map(to_grpc_instance).collect(),
+        ));
         println!("===============");
-        return grpc::SingleResponse::completed(r);
+        grpc::SingleResponse::completed(r)
     }
 
     fn accept(
         &self,
-        o: grpc::RequestOptions,
+        _o: grpc::RequestOptions,
         payload: grpc_service::Payload,
     ) -> grpc::SingleResponse<grpc_service::AcceptOKPayload> {
         println!("=======ACCEPT========");
@@ -364,12 +371,12 @@ impl EpaxosExternal for Epaxos {
         r.set_command(payload.get_write_req().clone());
         r.set_instance(payload.get_instance().clone());
         println!("===============");
-        return grpc::SingleResponse::completed(r);
+        grpc::SingleResponse::completed(r)
     }
 
     fn commit(
         &self,
-        o: grpc::RequestOptions,
+        _o: grpc::RequestOptions,
         payload: grpc_service::Payload,
     ) -> grpc::SingleResponse<grpc_service::Empty> {
         println!("======COMMIT=========");
@@ -400,7 +407,7 @@ impl EpaxosExternal for Epaxos {
         println!("My log is {:?}", *self.cmds.lock().unwrap());
         println!("===============");
         let r = grpc_service::Empty::new();
-        return grpc::SingleResponse::completed(r);
+        grpc::SingleResponse::completed(r)
     }
 }
 
@@ -408,16 +415,12 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let id: u32 = args[1].parse().unwrap();
-    let internal_port = REPLICA_INTERNAL_PORTS[id as usize];
-    let external_port = REPLICA_EXTERNAL_PORTS[id as usize];
+    let port = REPLICA_INTERNAL_PORTS[id as usize];
     let mut server_builder1 = grpc::ServerBuilder::new_plain();
     server_builder1.add_service(EpaxosExternalServer::new_service_def(Epaxos::init(
         ReplicaId(id as usize),
     )));
-    // server_builder1.add_service(EpaxosInternalServer::new_service_def(Epaxos::init(
-    //     ReplicaId(id as usize),
-    // )));
-    server_builder1.http.set_port(internal_port);
+    server_builder1.http.set_port(port);
     let server1 = server_builder1.build().expect("build");
     println!("server started on addr {}", server1.local_addr());
 

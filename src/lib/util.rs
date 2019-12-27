@@ -1,5 +1,6 @@
 // extern crate sharedlib;
 use crate::epaxos as grpc;
+use std::cmp::Ordering;
 extern crate protobuf;
 
 pub const SLOW_QUORUM: usize = 3; // floor(N/2)
@@ -105,5 +106,19 @@ pub fn from_grpc_write_request(grpc_write_req: &grpc::WriteRequest) -> WriteRequ
     WriteRequest {
         key: grpc_write_req.get_key().to_owned(),
         value: grpc_write_req.get_value(),
+    }
+}
+
+pub fn sort_instances(inst1: &Instance, inst2: &Instance) -> Ordering {
+    if inst1.replica < inst2.replica {
+        Ordering::Less
+    } else if inst1.replica > inst2.replica {
+        Ordering::Greater
+    } else {
+        if inst1.slot < inst2.slot {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
     }
 }
