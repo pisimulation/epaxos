@@ -1,10 +1,10 @@
-extern crate epaxos_rs;
 extern crate futures;
 extern crate grpc;
+extern crate sharedlib;
 
-use epaxos_rs::epaxos::*;
-use epaxos_rs::epaxos_grpc::*;
 use grpc::ClientStub;
+use sharedlib::epaxos::*;
+use sharedlib::epaxos_grpc::*;
 use std::sync::Arc;
 
 fn main() {

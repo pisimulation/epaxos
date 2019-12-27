@@ -16,6 +16,10 @@ futures-cpupool = "~0.1"
 [build-dependencies]
 protoc-rust-grpc = "0.6.1"
 
+[lib]
+name = "sharedlib"
+path = "src/lib/lib.rs"
+
 [[bin]]
 name = "server"
 path = "src/server.rs"
