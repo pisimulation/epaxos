@@ -65,6 +65,19 @@ impl Epaxos {
         }
     }
 
+    fn fast_quorum(&self) -> Vec<ReplicaId> {
+        let mut quorum = Vec::new();
+        for i in 1..FAST_QUORUM {
+            let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
+            if quorum_member == self.id.0 as i32 {
+                println!("!!");
+                quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
+            }
+            quorum.push(ReplicaId(quorum_member as usize));
+        }
+        quorum
+    }
+
     // we only need to do consensus for write req
     fn consensus(&self, write_req: &WriteRequest) -> bool {
         println!("Starting consensus");
@@ -88,27 +101,22 @@ impl Epaxos {
             state: State::PreAccepted,
         };
         (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry.clone());
-        let mut fast_quorum = 1; // Leader votes for itself
+        let mut good_pre_accept_ok_counts = 1; // Leader votes for itself
         let mut slow_path = false;
         let mut fast_path = false;
+        let fast_quorum_members = self.fast_quorum();
         // Send PreAccept message to replicas in Fast Quorum
-        for i in 1..FAST_QUORUM {
-            // if i == self.id.0 {
-            //     continue;
-            // }
-            let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
-            if quorum_member == self.id.0 as i32 {
-                println!("!!");
-                quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
-            }
+        for replica_id in fast_quorum_members.iter() {
             println!(
                 "Replica {} Sending pre_accept to replica {}",
-                self.id.0, quorum_member
+                self.id.0, replica_id.0
             );
+            // TODO : continue here, refactor, this is too big, also becareful
+            // take a look at futures & rayon
             crossbeam_thread::scope(|s| {
                 s.spawn(|_| {
                     let pre_accept_ok = (*self.replicas.lock().unwrap())
-                        .get(&ReplicaId(quorum_member as usize))
+                        .get(replica_id)
                         .unwrap()
                         .pre_accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
                     match pre_accept_ok.wait() {
@@ -118,7 +126,7 @@ impl Epaxos {
                                 && value.get_deps() == to_grpc_payload(&payload).get_deps() =>
                         {
                             println!("Got an agreeing PreAcceptOK: {:?}", value);
-                            fast_quorum += 1;
+                            good_pre_accept_ok_counts += 1;
                         }
                         // TODO: slow path here
                         Ok((_, value, _)) => {
@@ -149,11 +157,9 @@ impl Epaxos {
             })
             .unwrap();
         }
-
-        if fast_quorum >= FAST_QUORUM {
+        if good_pre_accept_ok_counts == FAST_QUORUM {
             fast_path = true;
         }
-
         if slow_path {
             log_entry.state = State::Accepted;
             // Update the state of the command in the slot to Accepted
@@ -161,31 +167,27 @@ impl Epaxos {
             // Run Paxos-Accept phase for new deps and new seq
             // Send Accept message to at least floor(N/2) other replicas
             let mut accept_ok_count = 1;
-            //for i in 0..REPLICAS_NUM {
-            for i in 1..FAST_QUORUM {
-                // if i == self.id.0 {
-                //     continue;
-                // }
-                let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
-                if quorum_member == self.id.0 as i32 {
-                    println!("!!");
-                    quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
-                }
+            for replica_id in fast_quorum_members.iter() {
                 println!(
                     "Replica {} sending ACCEPT to replica {}",
-                    self.id.0, quorum_member
+                    self.id.0, replica_id.0
                 );
-                let accept_ok = (*self.replicas.lock().unwrap())
-                    .get(&ReplicaId(quorum_member as usize))
-                    .unwrap()
-                    .accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
-                match accept_ok.wait() {
-                    Err(e) => panic!("[Paxos-Accept Stage] Replica panic {:?}", e),
-                    Ok((_, value, _)) => {
-                        println!("[Paxos-Accept Stage] got {:?}", value);
-                        accept_ok_count += 1;
-                    }
-                }
+                crossbeam_thread::scope(|s| {
+                    s.spawn(|_| {
+                        let accept_ok = (*self.replicas.lock().unwrap())
+                            .get(replica_id)
+                            .unwrap()
+                            .accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
+                        match accept_ok.wait() {
+                            Err(e) => panic!("[Paxos-Accept Stage] Replica panic {:?}", e),
+                            Ok((_, value, _)) => {
+                                println!("[Paxos-Accept Stage] got {:?}", value);
+                                accept_ok_count += 1;
+                            }
+                        }
+                    });
+                })
+                .unwrap();
             }
             if accept_ok_count >= SLOW_QUORUM {
                 fast_path = true;
@@ -199,20 +201,17 @@ impl Epaxos {
             (*self.cmds.lock().unwrap())[self.id.0].insert(slot as usize, log_entry);
 
             // Send Commit message to all replicas
-            for i in 1..FAST_QUORUM {
-                // if i == self.id.0 {
-                //     continue;
-                // }
-                let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
-                if quorum_member == self.id.0 as i32 {
-                    println!("!!");
-                    quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
-                }
-                (*self.replicas.lock().unwrap())
-                    .get(&ReplicaId(quorum_member as usize))
-                    .unwrap()
-                    .commit(grpc::RequestOptions::new(), to_grpc_payload(&payload));
-                println!("Sending Commit to replica {}", i);
+            for replica_id in fast_quorum_members.iter() {
+                crossbeam_thread::scope(|s| {
+                    s.spawn(|_| {
+                        (*self.replicas.lock().unwrap())
+                            .get(replica_id)
+                            .unwrap()
+                            .commit(grpc::RequestOptions::new(), to_grpc_payload(&payload));
+                        println!("Sending Commit to replica {}", replica_id.0);
+                    });
+                })
+                .unwrap();
             }
             *self.instance_number.lock().unwrap() += 1;
             println!("My log is {:?}", *self.cmds.lock().unwrap());
@@ -220,7 +219,6 @@ impl Epaxos {
         }
         println!("Consensus failed.");
         return false;
-        // TODO: how to wait for replies w/o blocking
     }
 
     fn find_max_seq(&self, interf: &Vec<Instance>) -> u32 {

@@ -41,6 +41,11 @@ pub enum State {
     Committed,
 }
 
+pub enum Path {
+    Fast,
+    Slow,
+}
+
 #[derive(Clone)]
 pub struct Payload {
     pub write_req: WriteRequest,
