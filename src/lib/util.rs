@@ -1,6 +1,6 @@
 // extern crate sharedlib;
 use crate::epaxos as grpc;
-use std::cmp::Ordering;
+use std::{cmp::Ordering, fmt};
 extern crate protobuf;
 
 pub const SLOW_QUORUM: usize = 3; // floor(N/2)
@@ -39,11 +39,6 @@ pub enum State {
     PreAccepted,
     Accepted,
     Committed,
-}
-
-pub enum Path {
-    Fast,
-    Slow,
 }
 
 #[derive(Clone)]
@@ -127,3 +122,29 @@ pub fn sort_instances(inst1: &Instance, inst2: &Instance) -> Ordering {
         }
     }
 }
+
+// impl fmt::Display for LogEntry {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         writeln!(
+//             f,
+//             "Key = {}\nValue = {}\nSeq = {}\nDeps = {:?}\nState = {}\n",
+//             self.key, self.value, self.seq, self.deps, self.state
+//         )
+//     }
+// }
+
+// impl fmt::Display for Instance {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         writeln!(f, "Replica ID = {}\nSlot = {}", self.replica, self.slot)
+//     }
+// }
+
+// impl fmt::Display for State {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         match *self {
+//             State::PreAccepted => write!(f, "PreAccepted"),
+//             State::Accepted => write!(f, "Accepted"),
+//             State::Committed => write!(f, "Committed"),
+//         }
+//     }
+// }

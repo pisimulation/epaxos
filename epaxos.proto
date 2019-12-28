@@ -8,7 +8,7 @@ package epaxos;
 //     rpc commit(Payload) returns (Empty);
 // }
 
-service EpaxosExternal {
+service EpaxosService {
     rpc pre_accept(Payload) returns (Payload);
     rpc accept(Payload) returns (AcceptOKPayload);
     rpc commit(Payload) returns (Empty);

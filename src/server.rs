@@ -8,7 +8,7 @@ extern crate sharedlib;
 use crossbeam::thread as crossbeam_thread;
 use grpc::ClientStub;
 use sharedlib::epaxos as grpc_service;
-use sharedlib::epaxos_grpc::{EpaxosExternal, EpaxosExternalClient, EpaxosExternalServer};
+use sharedlib::epaxos_grpc::{EpaxosService, EpaxosServiceClient, EpaxosServiceServer};
 use sharedlib::util::*;
 use std::{
     cmp,
@@ -29,7 +29,7 @@ struct Epaxos {
     store: Arc<Mutex<HashMap<String, i32>>>,
     cmds: Arc<Mutex<Vec<HashMap<usize, LogEntry>>>>,
     instance_number: Arc<Mutex<u32>>,
-    replicas: Arc<Mutex<HashMap<ReplicaId, EpaxosExternalClient>>>,
+    replicas: Arc<Mutex<HashMap<ReplicaId, EpaxosServiceClient>>>,
 }
 
 impl Epaxos {
@@ -52,7 +52,7 @@ impl Epaxos {
                 ">> Neighbor replica {} created : {:?}",
                 i, REPLICA_INTERNAL_PORTS[i as usize]
             );
-            let replica = EpaxosExternalClient::with_client(Arc::new(internal_client));
+            let replica = EpaxosServiceClient::with_client(Arc::new(internal_client));
             replicas.insert(ReplicaId(i), replica);
         }
 
@@ -258,7 +258,7 @@ impl Epaxos {
     }
 }
 
-impl EpaxosExternal for Epaxos {
+impl EpaxosService for Epaxos {
     fn write(
         &self,
         _m: grpc::RequestOptions,
@@ -292,9 +292,7 @@ impl EpaxosExternal for Epaxos {
         r.set_value(*((*self.store.lock().unwrap()).get(req.get_key())).unwrap());
         grpc::SingleResponse::completed(r)
     }
-    // }
 
-    // impl EpaxosInternal for Epaxos {
     fn pre_accept(
         &self,
         _o: grpc::RequestOptions,
@@ -419,7 +417,7 @@ fn main() {
     let id: u32 = args[1].parse().unwrap();
     let port = REPLICA_INTERNAL_PORTS[id as usize];
     let mut server_builder1 = grpc::ServerBuilder::new_plain();
-    server_builder1.add_service(EpaxosExternalServer::new_service_def(Epaxos::init(
+    server_builder1.add_service(EpaxosServiceServer::new_service_def(Epaxos::init(
         ReplicaId(id as usize),
     )));
     server_builder1.http.set_port(port);
