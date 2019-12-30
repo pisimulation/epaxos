@@ -1,5 +1,4 @@
 // extern crate sharedlib;
-use crate::epaxos as grpc;
 use std::{cmp::Ordering, fmt};
 extern crate protobuf;
 
@@ -68,45 +67,6 @@ pub struct LogEntry {
 pub struct Instance {
     pub replica: usize,
     pub slot: usize,
-}
-
-pub fn to_grpc_payload(payload: &Payload) -> grpc::Payload {
-    let mut grpc_payload = grpc::Payload::new();
-    grpc_payload.set_write_req(to_grpc_write_request(&payload.write_req));
-    grpc_payload.set_seq(payload.seq);
-    grpc_payload.set_deps(protobuf::RepeatedField::from_vec(
-        payload.deps.iter().map(to_grpc_instance).collect(),
-    ));
-    grpc_payload.set_instance(to_grpc_instance(&payload.instance));
-    grpc_payload
-}
-
-pub fn to_grpc_write_request(write_req: &WriteRequest) -> grpc::WriteRequest {
-    let mut grpc_write_req = grpc::WriteRequest::new();
-    grpc_write_req.set_key((*write_req.key).to_string());
-    grpc_write_req.set_value(write_req.value);
-    grpc_write_req
-}
-
-pub fn to_grpc_instance(instance: &Instance) -> grpc::Instance {
-    let mut grpc_instance = grpc::Instance::new();
-    grpc_instance.set_replica(instance.replica as u32);
-    grpc_instance.set_slot(instance.slot as u32);
-    grpc_instance
-}
-
-pub fn from_grpc_instance(grpc_instance: &grpc::Instance) -> Instance {
-    Instance {
-        replica: grpc_instance.get_replica() as usize,
-        slot: grpc_instance.get_slot() as usize,
-    }
-}
-
-pub fn from_grpc_write_request(grpc_write_req: &grpc::WriteRequest) -> WriteRequest {
-    WriteRequest {
-        key: grpc_write_req.get_key().to_owned(),
-        value: grpc_write_req.get_value(),
-    }
 }
 
 pub fn sort_instances(inst1: &Instance, inst2: &Instance) -> Ordering {

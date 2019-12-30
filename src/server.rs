@@ -9,7 +9,7 @@ use crossbeam::thread as crossbeam_thread;
 use grpc::ClientStub;
 use sharedlib::epaxos as grpc_service;
 use sharedlib::epaxos_grpc::{EpaxosService, EpaxosServiceClient, EpaxosServiceServer};
-use sharedlib::util::*;
+use sharedlib::logic::*;
 use std::{
     cmp,
     collections::HashMap,
@@ -118,12 +118,12 @@ impl Epaxos {
                     let pre_accept_ok = (*self.replicas.lock().unwrap())
                         .get(replica_id)
                         .unwrap()
-                        .pre_accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
+                        .pre_accept(grpc::RequestOptions::new(), payload.to_grpc());
                     match pre_accept_ok.wait() {
                         Err(e) => panic!("[PreAccept Stage] Replica panic {:?}", e),
                         Ok((_, value, _))
                             if value.get_seq() == payload.seq
-                                && value.get_deps() == to_grpc_payload(&payload).get_deps() =>
+                                && value.get_deps() == payload.to_grpc().get_deps() =>
                         {
                             println!("Got an agreeing PreAcceptOK: {:?}", value);
                             good_pre_accept_ok_counts += 1;
@@ -137,7 +137,7 @@ impl Epaxos {
                                 .get_deps()
                                 .to_vec()
                                 .iter()
-                                .map(from_grpc_instance)
+                                .map(Instance::from_grpc)
                                 .collect();
                             interf.append(&mut new_deps);
                             interf.sort_by(sort_instances);
@@ -177,7 +177,7 @@ impl Epaxos {
                         let accept_ok = (*self.replicas.lock().unwrap())
                             .get(replica_id)
                             .unwrap()
-                            .accept(grpc::RequestOptions::new(), to_grpc_payload(&payload));
+                            .accept(grpc::RequestOptions::new(), payload.to_grpc());
                         match accept_ok.wait() {
                             Err(e) => panic!("[Paxos-Accept Stage] Replica panic {:?}", e),
                             Ok((_, value, _)) => {
@@ -207,7 +207,7 @@ impl Epaxos {
                         (*self.replicas.lock().unwrap())
                             .get(replica_id)
                             .unwrap()
-                            .commit(grpc::RequestOptions::new(), to_grpc_payload(&payload));
+                            .commit(grpc::RequestOptions::new(), payload.to_grpc());
                         println!("Sending Commit to replica {}", replica_id.0);
                     });
                 })
@@ -270,7 +270,7 @@ impl EpaxosService for Epaxos {
             req.get_value()
         );
         let mut r = grpc_service::WriteResponse::new();
-        if self.consensus(&from_grpc_write_request(&req)) {
+        if self.consensus(&WriteRequest::from_grpc(&req)) {
             // TODO when do I actually execute?
             (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
             println!("Consensus successful. Sending a commit to client\n\n\n\n.");
@@ -317,7 +317,7 @@ impl EpaxosService for Epaxos {
             .get_deps()
             .to_vec()
             .iter()
-            .map(from_grpc_instance)
+            .map(Instance::from_grpc)
             .collect();
         deps.append(&mut interf.clone());
         deps.sort_by(sort_instances);
@@ -335,7 +335,7 @@ impl EpaxosService for Epaxos {
         let mut r = payload.clone();
         r.set_seq(seq);
         r.set_deps(protobuf::RepeatedField::from_vec(
-            deps.clone().iter().map(to_grpc_instance).collect(),
+            deps.clone().iter().map(Instance::to_grpc).collect(),
         ));
         println!("===============");
         grpc::SingleResponse::completed(r)
@@ -362,7 +362,7 @@ impl EpaxosService for Epaxos {
                 .get_deps()
                 .to_vec()
                 .iter()
-                .map(from_grpc_instance)
+                .map(Instance::from_grpc)
                 .collect(),
             state: State::Accepted,
         };
@@ -398,7 +398,7 @@ impl EpaxosService for Epaxos {
                 .get_deps()
                 .to_vec()
                 .iter()
-                .map(from_grpc_instance)
+                .map(Instance::from_grpc)
                 .collect(),
             state: State::Committed,
         };
