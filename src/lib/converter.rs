@@ -77,6 +77,22 @@ impl Payload {
     }
 }
 
+impl AcceptOKPayload {
+    pub fn from_grpc(payload: &grpc::AcceptOKPayload) -> Self {
+        AcceptOKPayload {
+            write_req: WriteRequest::from_grpc(payload.get_command()),
+            instance: Instance::from_grpc(payload.get_instance()),
+        }
+    }
+
+    pub fn to_grpc(&self) -> grpc::AcceptOKPayload {
+        let mut payload = grpc::AcceptOKPayload::new();
+        payload.set_command(self.write_req.to_grpc());
+        payload.set_instance(self.instance.to_grpc());
+        payload
+    }
+}
+
 impl Instance {
     pub fn from_grpc(instance: &grpc::Instance) -> Self {
         Instance {
