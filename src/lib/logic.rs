@@ -6,8 +6,13 @@ pub const SLOW_QUORUM: usize = 3; // floor(N/2)
 pub const FAST_QUORUM: usize = 3; // 1 + floor(F+1/2)
 pub const REPLICAS_NUM: usize = 5;
 pub const LOCALHOST: &str = "127.0.0.1";
-pub static REPLICA_INTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004, 10005];
-pub static REPLICA_EXTERNAL_PORTS: &'static [u16] = &[10000, 10001, 10002, 10003, 10004, 10005];
+pub const VA: &str = "52.91.194.30";
+pub const OH: &str = "3.14.126.7";
+pub const NORCA: &str = "54.153.101.248";
+pub const OR: &str = "54.191.225.135";
+pub const LDN: &str = "35.177.55.187";
+pub const REPLICA_PORT: u16 = 10000;
+pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, OH, NORCA, OR, LDN];
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct ReplicaId(pub u32);
