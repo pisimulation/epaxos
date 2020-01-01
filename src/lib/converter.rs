@@ -66,13 +66,15 @@ impl Payload {
     }
 
     pub fn to_grpc(&self) -> grpc::Payload {
+        //println!("[Payyload to grpc] self = {:?}", self);
         let mut payload = grpc::Payload::new();
         payload.set_write_req(self.write_req.to_grpc());
-        payload.set_seq(payload.seq);
+        payload.set_seq(self.seq);
         payload.set_deps(protobuf::RepeatedField::from_vec(
             self.deps.iter().map(|dep| dep.to_grpc()).collect(),
         ));
         payload.set_instance(Instance::to_grpc(&self.instance));
+        //println!("[Payyload to grpc] converted payload = {:?}", payload);
         payload
     }
 }
@@ -96,15 +98,17 @@ impl AcceptOKPayload {
 impl Instance {
     pub fn from_grpc(instance: &grpc::Instance) -> Self {
         Instance {
-            replica: instance.get_replica() as usize,
-            slot: instance.get_slot() as usize,
+            replica: instance.get_replica(),
+            slot: instance.get_slot(),
         }
     }
 
     pub fn to_grpc(&self) -> grpc::Instance {
+        //println!("[instance] self = {:?}", self);
         let mut instance = grpc::Instance::new();
-        instance.set_replica(self.replica as u32);
-        instance.set_slot(self.slot as u32);
+        instance.set_replica(self.replica);
+        instance.set_slot(self.slot);
+        // println!("[instance] converted instance = {:?}", instance);
         instance
     }
 }
