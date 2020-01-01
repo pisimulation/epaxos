@@ -59,7 +59,6 @@ impl EpaxosServer {
         println!("Starting consensus");
         let mut epaxos_logic = self.epaxos_logic.lock().unwrap();
         let payload = epaxos_logic.lead_consensus(write_req.clone());
-        println!(">> PreAcceptPayload : {:?}", payload);
         let fast_quorum_members = epaxos_logic.fast_quorum();
         let pre_accept_oks = self.send_pre_accepts(&fast_quorum_members, payload.clone());
 
@@ -97,7 +96,6 @@ impl EpaxosServer {
                     match pre_accept_ok.wait() {
                         Err(e) => panic!("[PreAccept Stage] Replica panic {:?}", e),
                         Ok((_, value, _)) => {
-                            println!(">> got preacceptok: {:?}", Payload::from_grpc(&value));
                             pre_accept_oks.push(Payload::from_grpc(&value));
                         }
                     }
@@ -119,8 +117,7 @@ impl EpaxosServer {
                         .accept(grpc::RequestOptions::new(), payload.to_grpc());
                     match accept_ok.wait() {
                         Err(e) => panic!("[Paxos-Accept Stage] Replica panic {:?}", e),
-                        Ok((_, value, _)) => {
-                            println!("[Paxos-Accept Stage] got {:?}", value);
+                        Ok((_, _, _)) => {
                             accept_ok_count += 1;
                         }
                     }
@@ -193,8 +190,6 @@ impl EpaxosService for EpaxosServer {
         let mut epaxos_logic = self.epaxos_logic.lock().unwrap();
         let request = PreAccept(Payload::from_grpc(&p));
         let response = epaxos_logic.pre_accept_(request);
-        // println!(">>> response: {:?}", response.0);
-        // println!(">>> response grpc: {:?}", response.0.to_grpc());
         grpc::SingleResponse::completed(response.0.to_grpc())
     }
 

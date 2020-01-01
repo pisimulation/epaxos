@@ -161,9 +161,6 @@ impl EpaxosLogic {
             if seq == payload.seq && deps == payload.deps {
                 continue;
             } else {
-                println!("Got some dissenting voice. Taking things slow.");
-                println!("My payload: {:?}", payload);
-                println!("Theirs: {:?}", pre_accept_ok);
                 // Union deps from all replies
                 let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps);
                 new_payload.deps = new_deps.clone();
@@ -199,7 +196,7 @@ impl EpaxosLogic {
                 slot: instance.slot,
             },
         );
-        println!("Commited. My log is {:?}", self.cmds);
+        println!("Commited. My log is {:#?}", self.cmds);
     }
 
     pub fn accepted(&mut self, payload: Payload) {
@@ -266,7 +263,6 @@ impl EpaxosLogic {
             deps: deps.clone(),
             state: State::PreAccepted,
         };
-        println!(">> seq: {}", seq_);
         self.update_log(log_entry, instance.clone());
         PreAcceptOK(Payload {
             write_req: write_req,
@@ -314,7 +310,7 @@ impl EpaxosLogic {
         };
         // Update the state in the log to commit
         self.update_log(log_entry, instance);
-        println!("Committed. My log is {:?}", self.cmds);
+        println!("Committed. My log is {:#?}", self.cmds);
     }
 
     fn find_interference(&self, key: String) -> Vec<Instance> {
@@ -331,7 +327,7 @@ impl EpaxosLogic {
                 }
             }
         }
-        println!(">> Found interf : {:?}", interf);
+        println!(">> Found interf : {:#?}", interf);
         interf
     }
 
@@ -354,7 +350,7 @@ impl fmt::Debug for LogEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(
             f,
-            "Key = {}\nValue = {}\nSeq = {}\nDeps = {:?}\nState = {:?}\n",
+            "\nWrite(key = {}, value = {})\nSeq = {}\nDeps = {:#?}\nState = {:?}\n",
             self.key, self.value, self.seq, self.deps, self.state
         )
     }
@@ -362,7 +358,7 @@ impl fmt::Debug for LogEntry {
 
 impl fmt::Debug for Instance {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Replica ID = {}\nSlot = {}", self.replica, self.slot)
+        writeln!(f, "(Replica: {}, Slot: {})", self.replica, self.slot)
     }
 }
 
