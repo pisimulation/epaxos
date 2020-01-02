@@ -225,7 +225,7 @@ fn main() {
     server_builder1.add_service(EpaxosServiceServer::new_service_def(EpaxosServer::init(
         ReplicaId(id),
     )));
-    server_builder1.http.set_addr(addr);
+    //server_builder1.http.set_addr(addr);
     server_builder1.http.set_port(REPLICA_PORT);
     let server1 = server_builder1.build().expect("build");
     println!(">> Me {}", server1.local_addr());

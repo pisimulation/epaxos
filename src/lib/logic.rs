@@ -6,11 +6,11 @@ pub const SLOW_QUORUM: usize = 3; // floor(N/2)
 pub const FAST_QUORUM: usize = 3; // 1 + floor(F+1/2)
 pub const REPLICAS_NUM: usize = 5;
 pub const LOCALHOST: &str = "127.0.0.1";
-pub const VA: &str = "3.91.179.247";
-pub const OH: &str = "3.16.167.239";
-pub const NORCA: &str = "54.183.4.167";
-pub const OR: &str = "34.214.178.143";
-pub const LDN: &str = "18.130.4.180";
+pub const VA: &str = "52.23.98.238";
+pub const OH: &str = "3.130.94.244";
+pub const NORCA: &str = "52.53.140.242";
+pub const OR: &str = "54.68.85.53";
+pub const LDN: &str = "3.11.89.226";
 pub const REPLICA_PORT: u16 = 10000;
 pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, OH, NORCA, OR, LDN];
 
