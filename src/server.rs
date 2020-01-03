@@ -49,7 +49,7 @@ impl EpaxosServer {
 
         EpaxosServer {
             store: Arc::new(Mutex::new(HashMap::new())),
-            epaxos_logic: Arc::new(Mutex::new(EpaxosLogic::init(&id))),
+            epaxos_logic: Arc::new(Mutex::new(EpaxosLogic::init(id))),
             replicas: replicas,
         }
     }
@@ -58,24 +58,24 @@ impl EpaxosServer {
     fn consensus(&self, write_req: &WriteRequest) -> bool {
         println!("Starting consensus");
         let mut epaxos_logic = self.epaxos_logic.lock().unwrap();
-        let payload = epaxos_logic.lead_consensus(write_req);
+        let payload = epaxos_logic.lead_consensus(write_req.clone());
         let fast_quorum_members = epaxos_logic.fast_quorum();
         let pre_accept_oks = self.send_pre_accepts(&fast_quorum_members, &payload);
 
-        match epaxos_logic.decide_path(&pre_accept_oks, &payload) {
+        match epaxos_logic.decide_path(pre_accept_oks, &payload) {
             Path::Fast(payload_) => {
                 // Send Commit message to F
                 self.send_commits(&fast_quorum_members, &payload_);
-                epaxos_logic.committed(&payload_);
+                epaxos_logic.committed(payload_);
                 return true;
             }
             Path::Slow(payload_) => {
                 // Start Paxos-Accept stage
                 // Send Accept message to F
-                epaxos_logic.accepted(&payload_);
+                epaxos_logic.accepted(payload_.clone());
                 if self.send_accepts(&fast_quorum_members, &payload_) >= SLOW_QUORUM {
                     self.send_commits(&fast_quorum_members, &payload_);
-                    epaxos_logic.committed(&payload_);
+                    epaxos_logic.committed(payload_);
                     return true;
                 }
                 return false;

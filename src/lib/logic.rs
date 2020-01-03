@@ -105,20 +105,20 @@ pub struct EpaxosLogic {
 }
 
 impl EpaxosLogic {
-    pub fn init(id: &ReplicaId) -> EpaxosLogic {
+    pub fn init(id: ReplicaId) -> EpaxosLogic {
         let commands = vec![HashMap::new(); REPLICAS_NUM];
         EpaxosLogic {
-            id: *id,
+            id: id,
             cmds: commands,
             instance_number: 0,
         }
     }
 
-    pub fn update_log(&mut self, log_entry: &LogEntry, instance: &Instance) {
-        self.cmds[instance.replica as usize].insert(instance.slot as usize, log_entry.clone());
+    pub fn update_log(&mut self, log_entry: LogEntry, instance: &Instance) {
+        self.cmds[instance.replica as usize].insert(instance.slot as usize, log_entry);
     }
 
-    pub fn lead_consensus(&mut self, write_req: &WriteRequest) -> Payload {
+    pub fn lead_consensus(&mut self, write_req: WriteRequest) -> Payload {
         // let WriteRequest { key, value } = write_req;
         let slot = self.instance_number;
         let interf = self.find_interference(&write_req.key);
@@ -131,14 +131,14 @@ impl EpaxosLogic {
             state: State::PreAccepted,
         };
         self.update_log(
-            &log_entry,
+            log_entry,
             &Instance {
                 replica: self.id.0,
                 slot: slot,
             },
         );
         Payload {
-            write_req: write_req.clone(),
+            write_req: write_req,
             seq: seq,
             deps: interf,
             instance: Instance {
@@ -148,7 +148,7 @@ impl EpaxosLogic {
         }
     }
 
-    pub fn decide_path(&self, pre_accept_oks: &Vec<Payload>, payload: &Payload) -> Path {
+    pub fn decide_path(&self, pre_accept_oks: Vec<Payload>, payload: &Payload) -> Path {
         let mut new_payload = payload.clone();
         let mut path = Path::Fast(payload.clone());
         for pre_accept_ok in pre_accept_oks {
@@ -162,7 +162,7 @@ impl EpaxosLogic {
                 continue;
             } else {
                 // Union deps from all replies
-                let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps.clone());
+                let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps);
                 new_payload.deps = new_deps.clone();
                 // Set seq to max of seq from all replies
                 if pre_accept_ok.seq > seq {
@@ -174,7 +174,7 @@ impl EpaxosLogic {
         path
     }
 
-    pub fn committed(&mut self, payload: &Payload) {
+    pub fn committed(&mut self, payload: Payload) {
         let Payload {
             write_req,
             seq,
@@ -183,14 +183,14 @@ impl EpaxosLogic {
         } = payload;
         self.instance_number += 1;
         let log_entry = LogEntry {
-            key: write_req.key.to_owned(),
+            key: write_req.key,
             value: write_req.value,
-            seq: *seq,
-            deps: deps.clone(),
+            seq: seq,
+            deps: deps,
             state: State::Committed,
         };
         self.update_log(
-            &log_entry,
+            log_entry,
             &Instance {
                 replica: instance.replica,
                 slot: instance.slot,
@@ -199,7 +199,7 @@ impl EpaxosLogic {
         println!("Commited. My log is {:#?}", self.cmds);
     }
 
-    pub fn accepted(&mut self, payload: &Payload) {
+    pub fn accepted(&mut self, payload: Payload) {
         let Payload {
             write_req,
             seq,
@@ -207,14 +207,14 @@ impl EpaxosLogic {
             instance,
         } = payload;
         let log_entry = LogEntry {
-            key: write_req.key.to_owned(),
+            key: write_req.key,
             value: write_req.value,
-            seq: *seq,
-            deps: deps.clone(),
+            seq: seq,
+            deps: deps,
             state: State::Accepted,
         };
         self.update_log(
-            &log_entry,
+            log_entry,
             &Instance {
                 replica: instance.replica,
                 slot: instance.slot,
@@ -263,7 +263,7 @@ impl EpaxosLogic {
             deps: deps.clone(),
             state: State::PreAccepted,
         };
-        self.update_log(&log_entry, &instance);
+        self.update_log(log_entry, &instance);
         PreAcceptOK(Payload {
             write_req: write_req,
             seq: seq_,
@@ -287,7 +287,7 @@ impl EpaxosLogic {
             deps: deps,
             state: State::Accepted,
         };
-        self.update_log(&log_entry, &instance);
+        self.update_log(log_entry, &instance);
         AcceptOK(AcceptOKPayload {
             write_req: write_req,
             instance: instance,
@@ -309,7 +309,7 @@ impl EpaxosLogic {
             state: State::Committed,
         };
         // Update the state in the log to commit
-        self.update_log(&log_entry, &instance);
+        self.update_log(log_entry, &instance);
         println!("Committed. My log is {:#?}", self.cmds);
     }
 
