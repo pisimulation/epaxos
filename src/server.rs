@@ -17,7 +17,6 @@ use std::{
     thread,
 };
 
-//#[derive(Clone)]
 struct EpaxosServer {
     // In grpc, parameters in service are immutable.
     // See https://github.com/stepancheg/grpc-rust/blob/master/docs/FAQ.md

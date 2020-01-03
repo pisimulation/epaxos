@@ -124,7 +124,6 @@ impl EpaxosLogic {
     }
 
     pub fn lead_consensus(&mut self, write_req: WriteRequest) -> Payload {
-        // let WriteRequest { key, value } = write_req;
         let slot = self.instance_number;
         let interf = self.find_interference(&write_req.key);
         let seq = 1 + self.find_max_seq(&interf);
