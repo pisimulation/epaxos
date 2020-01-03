@@ -33,14 +33,14 @@ impl EpaxosServer {
         for i in 0..REPLICAS_NUM {
             if i != id.0 as usize {
                 let internal_client = grpc::Client::new_plain(
-                    LOCALHOST,
-                    REPLICA_INTERNAL_PORTS[i as usize],
+                    REPLICA_ADDRESSES[i as usize],
+                    REPLICA_PORT,
                     Default::default(),
                 )
                 .unwrap();
                 println!(
                     ">> Neighbor replica {} created : {:?}",
-                    i, REPLICA_INTERNAL_PORTS[i as usize]
+                    i, REPLICA_ADDRESSES[i as usize]
                 );
                 let replica = EpaxosServiceClient::with_client(Arc::new(internal_client));
                 replicas.insert(ReplicaId(i as u32), replica);
@@ -220,12 +220,11 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let id: u32 = args[1].parse().unwrap();
-    let port = REPLICA_INTERNAL_PORTS[id as usize];
     let mut server_builder1 = grpc::ServerBuilder::new_plain();
     server_builder1.add_service(EpaxosServiceServer::new_service_def(EpaxosServer::init(
         ReplicaId(id),
     )));
-    server_builder1.http.set_port(port);
+    server_builder1.http.set_port(REPLICA_PORT);
     let server1 = server_builder1.build().expect("build");
     println!(">> Me {}", server1.local_addr());
 
