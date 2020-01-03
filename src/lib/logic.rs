@@ -14,7 +14,7 @@ pub const LDN: &str = "3.11.89.226";
 pub const REPLICA_PORT: u16 = 10000;
 pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, OH, NORCA, OR, LDN];
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug, Copy)]
 pub struct ReplicaId(pub u32);
 
 #[derive(Debug, Clone)]
@@ -23,7 +23,7 @@ pub struct WriteRequest {
     pub value: i32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct WriteResponse {
     pub commit: bool,
 }
@@ -33,7 +33,7 @@ pub struct ReadRequest {
     pub key: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct ReadResponse {
     pub value: i32,
 }
@@ -68,7 +68,7 @@ pub struct LogEntry {
     pub state: State,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Copy)]
 pub struct Instance {
     pub replica: u32,
     pub slot: u32,
@@ -110,40 +110,40 @@ pub struct EpaxosLogic {
 }
 
 impl EpaxosLogic {
-    pub fn init(id: ReplicaId) -> EpaxosLogic {
+    pub fn init(id: &ReplicaId) -> EpaxosLogic {
         let commands = vec![HashMap::new(); REPLICAS_NUM];
         EpaxosLogic {
-            id: id,
+            id: *id,
             cmds: commands,
             instance_number: 0,
         }
     }
 
-    pub fn update_log(&mut self, log_entry: LogEntry, instance: Instance) {
-        self.cmds[instance.replica as usize].insert(instance.slot as usize, log_entry);
+    pub fn update_log(&mut self, log_entry: &LogEntry, instance: &Instance) {
+        self.cmds[instance.replica as usize].insert(instance.slot as usize, log_entry.clone());
     }
 
-    pub fn lead_consensus(&mut self, write_req: WriteRequest) -> Payload {
-        let WriteRequest { key, value } = write_req.clone();
+    pub fn lead_consensus(&mut self, write_req: &WriteRequest) -> Payload {
+        // let WriteRequest { key, value } = write_req;
         let slot = self.instance_number;
-        let interf = self.find_interference(key.clone());
+        let interf = self.find_interference(&write_req.key);
         let seq = 1 + self.find_max_seq(&interf);
         let log_entry = LogEntry {
-            key: key.to_owned(),
-            value: value,
+            key: write_req.key.to_owned(),
+            value: write_req.value,
             seq: seq,
             deps: interf.clone(),
             state: State::PreAccepted,
         };
         self.update_log(
-            log_entry,
-            Instance {
+            &log_entry,
+            &Instance {
                 replica: self.id.0,
                 slot: slot,
             },
         );
         Payload {
-            write_req: write_req,
+            write_req: write_req.clone(),
             seq: seq,
             deps: interf,
             instance: Instance {
@@ -153,7 +153,7 @@ impl EpaxosLogic {
         }
     }
 
-    pub fn decide_path(&self, pre_accept_oks: Vec<Payload>, payload: Payload) -> Path {
+    pub fn decide_path(&self, pre_accept_oks: &Vec<Payload>, payload: &Payload) -> Path {
         let mut new_payload = payload.clone();
         let mut path = Path::Fast(payload.clone());
         for pre_accept_ok in pre_accept_oks {
@@ -167,7 +167,7 @@ impl EpaxosLogic {
                 continue;
             } else {
                 // Union deps from all replies
-                let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps);
+                let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps.clone());
                 new_payload.deps = new_deps.clone();
                 // Set seq to max of seq from all replies
                 if pre_accept_ok.seq > seq {
@@ -179,24 +179,24 @@ impl EpaxosLogic {
         path
     }
 
-    pub fn committed(&mut self, payload: Payload) {
+    pub fn committed(&mut self, payload: &Payload) {
         let Payload {
             write_req,
             seq,
             deps,
             instance,
-        } = payload.clone();
+        } = payload;
         self.instance_number += 1;
         let log_entry = LogEntry {
-            key: write_req.key,
+            key: write_req.key.to_owned(),
             value: write_req.value,
-            seq: seq,
-            deps: deps,
+            seq: *seq,
+            deps: deps.clone(),
             state: State::Committed,
         };
         self.update_log(
-            log_entry,
-            Instance {
+            &log_entry,
+            &Instance {
                 replica: instance.replica,
                 slot: instance.slot,
             },
@@ -204,23 +204,23 @@ impl EpaxosLogic {
         println!("Commited. My log is {:#?}", self.cmds);
     }
 
-    pub fn accepted(&mut self, payload: Payload) {
+    pub fn accepted(&mut self, payload: &Payload) {
         let Payload {
             write_req,
             seq,
             deps,
             instance,
-        } = payload.clone();
+        } = payload;
         let log_entry = LogEntry {
-            key: write_req.key,
+            key: write_req.key.to_owned(),
             value: write_req.value,
-            seq: seq,
-            deps: deps,
+            seq: *seq,
+            deps: deps.clone(),
             state: State::Accepted,
         };
         self.update_log(
-            log_entry,
-            Instance {
+            &log_entry,
+            &Instance {
                 replica: instance.replica,
                 slot: instance.slot,
             },
@@ -256,7 +256,7 @@ impl EpaxosLogic {
             instance,
         } = pre_accept_req.0;
         let WriteRequest { key, value } = write_req.clone();
-        let interf = self.find_interference(key.to_owned());
+        let interf = self.find_interference(&key);
         let seq_ = cmp::max(seq, 1 + self.find_max_seq(&interf));
         if interf != deps {
             deps = self.union_deps(deps, interf);
@@ -268,12 +268,12 @@ impl EpaxosLogic {
             deps: deps.clone(),
             state: State::PreAccepted,
         };
-        self.update_log(log_entry, instance.clone());
+        self.update_log(&log_entry, &instance);
         PreAcceptOK(Payload {
             write_req: write_req,
             seq: seq_,
             deps: deps,
-            instance: instance.clone(),
+            instance: instance,
         })
     }
     pub fn accept_(&mut self, accept_req: Accept) -> AcceptOK {
@@ -292,7 +292,7 @@ impl EpaxosLogic {
             deps: deps,
             state: State::Accepted,
         };
-        self.update_log(log_entry, instance.clone());
+        self.update_log(&log_entry, &instance);
         AcceptOK(AcceptOKPayload {
             write_req: write_req,
             instance: instance,
@@ -314,16 +314,16 @@ impl EpaxosLogic {
             state: State::Committed,
         };
         // Update the state in the log to commit
-        self.update_log(log_entry, instance);
+        self.update_log(&log_entry, &instance);
         println!("Committed. My log is {:#?}", self.cmds);
     }
 
-    fn find_interference(&self, key: String) -> Vec<Instance> {
+    fn find_interference(&self, key: &String) -> Vec<Instance> {
         println!("Finding interf");
         let mut interf = Vec::new();
         for replica in 0..REPLICAS_NUM {
             for (slot, log_entry) in self.cmds[replica].iter() {
-                if log_entry.key == key {
+                if log_entry.key == *key {
                     let instance = Instance {
                         replica: replica as u32,
                         slot: *slot as u32,
