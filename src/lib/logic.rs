@@ -1,18 +1,18 @@
 extern crate protobuf;
 
-use std::{cmp, cmp::Ordering, collections::HashMap, fmt};
+use std::{cmp, cmp::Ordering, collections::HashMap, fmt, time::Duration};
 
 pub const SLOW_QUORUM: usize = 3; // floor(N/2)
 pub const FAST_QUORUM: usize = 4; // 2F
 pub const REPLICAS_NUM: usize = 5;
 pub const LOCALHOST: &str = "127.0.0.1";
 pub const VA: &str = "52.23.98.238";
-pub const OH: &str = "3.130.94.244";
 pub const NORCA: &str = "52.53.140.242";
 pub const OR: &str = "54.68.85.53";
-pub const LDN: &str = "3.11.89.226";
+pub const JP: &str = "18.176.188.121";
+pub const EU: &str = "108.128.186.5";
 pub const REPLICA_PORT: u16 = 10000;
-pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, OH, NORCA, OR, LDN];
+pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, NORCA, OR, JP, EU];
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug, Copy)]
 pub struct ReplicaId(pub u32);
@@ -102,6 +102,8 @@ pub fn sort_instances(inst1: &Instance, inst2: &Instance) -> Ordering {
         }
     }
 }
+
+//pub fn rtt(addr1: &str, addr2: &str) -> Duration {}
 
 pub struct EpaxosLogic {
     pub id: ReplicaId,
