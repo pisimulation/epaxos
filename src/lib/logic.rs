@@ -3,7 +3,7 @@ extern crate protobuf;
 use std::{cmp, cmp::Ordering, collections::HashMap, fmt};
 
 pub const SLOW_QUORUM: usize = 3; // floor(N/2)
-pub const FAST_QUORUM: usize = 3; // 1 + floor(F+1/2)
+pub const FAST_QUORUM: usize = 4; // 2F
 pub const REPLICAS_NUM: usize = 5;
 pub const LOCALHOST: &str = "127.0.0.1";
 pub const VA: &str = "52.23.98.238";
@@ -165,6 +165,7 @@ impl EpaxosLogic {
             if seq == payload.seq && deps == payload.deps {
                 continue;
             } else {
+                println!("Got some dissenting voice: {:#?}", pre_accept_ok.deps);
                 // Union deps from all replies
                 let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps);
                 new_payload.deps = new_deps.clone();
@@ -331,7 +332,7 @@ impl EpaxosLogic {
                 }
             }
         }
-        println!(">> Found interf : {:#?}", interf);
+        interf.sort_by(sort_instances);
         interf
     }
 
