@@ -5,7 +5,7 @@ extern crate sharedlib;
 use grpc::ClientStub;
 use sharedlib::epaxos::*;
 use sharedlib::epaxos_grpc::*;
-use sharedlib::logic::{LDN, REPLICA_PORT};
+use sharedlib::logic::{EU, REPLICA_PORT};
 use std::sync::Arc;
 
 fn main() {
