@@ -162,6 +162,7 @@ impl EpaxosService for EpaxosServer {
         if self.consensus(&WriteRequest::from_grpc(&req)) {
             // TODO when do I actually execute?
             (*self.store.lock().unwrap()).insert(req.get_key().to_owned(), req.get_value());
+            println!("DONE my store: {:#?}", self.store.lock().unwrap());
             println!("Consensus successful. Sending a commit to client\n\n\n\n.");
             r.set_commit(true);
         } else {
