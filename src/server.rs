@@ -228,8 +228,6 @@ fn main() {
     let server1 = server_builder1.build().expect("build");
     println!(">> Me {}", server1.local_addr());
 
-    rtt();
-
     // Blocks the main thread forever
     loop {
         thread::park();

@@ -1,9 +1,8 @@
 extern crate protobuf;
 
-use oping::{Ping, PingResult};
 use std::{cmp, cmp::Ordering, collections::HashMap, fmt, time::Duration};
 
-pub const SLOW_QUORUM: usize = 3; // floor(N/2)
+pub const SLOW_QUORUM: usize = 3; // F + 1
 pub const FAST_QUORUM: usize = 4; // 2F
 pub const REPLICAS_NUM: usize = 5;
 pub const LOCALHOST: &str = "127.0.0.1";
@@ -102,29 +101,6 @@ pub fn sort_instances(inst1: &Instance, inst2: &Instance) -> Ordering {
             Ordering::Greater
         }
     }
-}
-
-pub fn rtt() -> PingResult<()> {
-    let mut ping = Ping::new();
-    ping.set_timeout(5.0)?; // timeout of 5.0 seconds
-    ping.add_host(VA)?;
-    ping.add_host(NORCA)?;
-    ping.add_host(OR)?;
-    ping.add_host(EU)?;
-    ping.add_host(JP)?;
-    let responses = ping.send().unwrap();
-    for resp in responses {
-        if resp.dropped > 0 {
-            println!("No response from host: {}", resp.hostname);
-        } else {
-            println!(
-                "Response from host {} (address {}): latency {} ms",
-                resp.hostname, resp.address, resp.latency_ms
-            );
-            println!("    all details: {:?}", resp);
-        }
-    }
-    Ok(())
 }
 
 pub struct EpaxosLogic {
