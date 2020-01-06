@@ -236,13 +236,10 @@ impl EpaxosLogic {
 
     pub fn fast_quorum(&self) -> Vec<ReplicaId> {
         let mut quorum = Vec::new();
-        for i in 1..FAST_QUORUM {
-            let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
-            if quorum_member == self.id.0 as i32 {
-                println!("!!");
-                quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
+        for i in 0..REPLICAS_NUM {
+            if i != self.id.0 as usize {
+                quorum.push(ReplicaId(i as u32));
             }
-            quorum.push(ReplicaId(quorum_member as u32));
         }
         quorum
     }
