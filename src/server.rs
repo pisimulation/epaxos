@@ -59,7 +59,7 @@ impl EpaxosServer {
         let mut epaxos_logic = self.epaxos_logic.lock().unwrap();
         let payload = epaxos_logic.lead_consensus(write_req.clone());
         let fast_quorum_members = epaxos_logic.fast_quorum();
-        let pre_accept_oks = self.send_pre_accepts(fast_quorum_members, &payload);
+        let pre_accept_oks = self.send_pre_accepts(&fast_quorum_members, &payload);
 
         match epaxos_logic.decide_path(pre_accept_oks, &payload) {
             Path::Fast(payload_) => {
