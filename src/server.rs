@@ -134,7 +134,7 @@ impl EpaxosServer {
                         .get(replica_id)
                         .unwrap()
                         .commit(grpc::RequestOptions::new(), payload.to_grpc());
-                    println!("Sending Commit to replica {}", replica_id.0);
+                    //println!("Sending Commit to replica {}", replica_id.0);
                 });
             })
             .unwrap();
@@ -142,7 +142,7 @@ impl EpaxosServer {
     }
 
     fn execute(&self) {
-        println!("Executing");
+        //println!("Executing");
     }
 }
 

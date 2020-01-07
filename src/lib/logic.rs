@@ -165,7 +165,7 @@ impl EpaxosLogic {
             if seq == payload.seq && deps == payload.deps {
                 continue;
             } else {
-                println!("Got some dissenting voice: {:#?}", pre_accept_ok.deps);
+                //println!("Got some dissenting voice: {:#?}", pre_accept_ok.deps);
                 // Union deps from all replies
                 let new_deps = self.union_deps(new_payload.deps, pre_accept_ok.deps);
                 new_payload.deps = new_deps.clone();
@@ -201,7 +201,7 @@ impl EpaxosLogic {
                 slot: instance.slot,
             },
         );
-        println!("Commited. My log is {:#?}", self.cmds);
+        // println!("Commited. My log is {:#?}", self.cmds);
     }
 
     pub fn accepted(&mut self, payload: Payload) {
@@ -245,7 +245,6 @@ impl EpaxosLogic {
     }
 
     pub fn pre_accept_(&mut self, pre_accept_req: PreAccept) -> PreAcceptOK {
-        println!("=====PRE==ACCEPT========");
         let Payload {
             write_req,
             seq,
@@ -302,7 +301,6 @@ impl EpaxosLogic {
             deps,
             instance,
         } = commit_req.0;
-        println!("======COMMIT=========");
         let log_entry = LogEntry {
             key: write_req.key,
             value: write_req.value,
@@ -312,11 +310,10 @@ impl EpaxosLogic {
         };
         // Update the state in the log to commit
         self.update_log(log_entry, &instance);
-        println!("Committed. My log is {:#?}", self.cmds);
+        // println!("Committed. My log is {:#?}", self.cmds);
     }
 
     fn find_interference(&self, key: &String) -> Vec<Instance> {
-        println!("Finding interf");
         let mut interf = Vec::new();
         for replica in 0..REPLICAS_NUM {
             for (slot, log_entry) in self.cmds[replica].iter() {
