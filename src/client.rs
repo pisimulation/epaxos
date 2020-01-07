@@ -10,33 +10,13 @@ use sharedlib::logic::{WriteRequest, LOCALHOST, REPLICA_INTERNAL_PORTS};
 use std::{sync::Arc, time::Instant};
 
 fn main() {
-    let mut write_reqs = Vec::new();
     let write_req1 = WriteRequest {
         key: "pi".to_string(),
         value: 3,
     };
-    write_reqs.push((write_req1.to_grpc(), 0));
-    let write_req2 = WriteRequest {
-        key: "pi".to_string(),
-        value: 4,
-    };
-    write_reqs.push((write_req2.to_grpc(), 1));
-    let write_req3 = WriteRequest {
-        key: "pi".to_string(),
-        value: 5,
-    };
-    write_reqs.push((write_req3.to_grpc(), 2));
-    let write_req4 = WriteRequest {
-        key: "pi".to_string(),
-        value: 6,
-    };
-    write_reqs.push((write_req4.to_grpc(), 3));
-    let write_req5 = WriteRequest {
-        key: "pi".to_string(),
-        value: 7,
-    };
-    write_reqs.push((write_req5.to_grpc(), 4));
-    write_reqs.par_iter_mut().for_each(|(req, i)| {
+    let mut write_reqs = vec![write_req1.to_grpc(); 10];
+    write_reqs.par_iter_mut().enumerate().for_each(|(i, req)| {
+        //println!("{}", i);
         let grpc_client = Arc::new(
             grpc::Client::new_plain(LOCALHOST, REPLICA_INTERNAL_PORTS[0], Default::default())
                 .unwrap(),
