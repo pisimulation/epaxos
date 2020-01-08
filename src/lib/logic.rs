@@ -120,6 +120,7 @@ impl EpaxosLogic {
     }
 
     pub fn update_log(&mut self, log_entry: LogEntry, instance: &Instance) {
+        println!("updating log..");
         self.cmds[instance.replica as usize].insert(instance.slot as usize, log_entry);
     }
 
@@ -242,6 +243,7 @@ impl EpaxosLogic {
             instance,
         } = pre_accept_req.0;
         let WriteRequest { key, value } = write_req.clone();
+        println!("Processing PreAccept for key: {}, value: {}", key, value);
         let interf = self.find_interference(&key);
         let seq_ = cmp::max(seq, 1 + self.find_max_seq(&interf));
         if interf != deps {
