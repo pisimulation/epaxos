@@ -224,11 +224,10 @@ fn main() {
 
     let id: u32 = args[1].parse().unwrap();
     let r1: u32 = args[2].parse().unwrap();
-    let r2: u32 = args[3].parse().unwrap();
     let mut server_builder1 = grpc::ServerBuilder::new_plain();
     server_builder1.add_service(EpaxosServiceServer::new_service_def(EpaxosServer::init(
         ReplicaId(id),
-        vec![ReplicaId(r1), ReplicaId(r2)],
+        vec![ReplicaId(r1)],
     )));
     server_builder1.http.set_port(REPLICA_PORT);
     let server1 = server_builder1.build().expect("build");

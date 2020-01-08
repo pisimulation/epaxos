@@ -2,17 +2,15 @@ extern crate protobuf;
 
 use std::{cmp, cmp::Ordering, collections::HashMap, fmt, time::Duration};
 
-pub const SLOW_QUORUM: usize = 3; // F + 1
-pub const FAST_QUORUM: usize = 3; // F + floor(F + 1 / 2)
-pub const REPLICAS_NUM: usize = 5;
+pub const SLOW_QUORUM: usize = 2; // F + 1
+pub const FAST_QUORUM: usize = 2; // F + floor(F + 1 / 2)
+pub const REPLICAS_NUM: usize = 3;
 pub const LOCALHOST: &str = "127.0.0.1";
 pub const VA: &str = "52.23.98.238";
 pub const NORCA: &str = "52.53.140.242";
-pub const OR: &str = "54.68.85.53";
-pub const JP: &str = "18.176.188.121";
 pub const EU: &str = "108.128.186.5";
 pub const REPLICA_PORT: u16 = 10000;
-pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, JP, NORCA, OR, EU];
+pub static REPLICA_ADDRESSES: [&str; REPLICAS_NUM] = [VA, NORCA, EU];
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug, Copy)]
 pub struct ReplicaId(pub u32);
