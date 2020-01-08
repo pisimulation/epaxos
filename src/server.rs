@@ -86,7 +86,7 @@ impl EpaxosServer {
     fn send_pre_accepts(&self, payload: &Payload) -> Vec<Payload> {
         let mut pre_accept_oks = Vec::new();
         for replica_id in self.quorum_members.iter() {
-            println!("Sending PreAccept to {:?}", replica_id);
+            //println!("Sending PreAccept to {:?}", replica_id);
             crossbeam_thread::scope(|s| {
                 s.spawn(|_| {
                     let pre_accept_ok = self
