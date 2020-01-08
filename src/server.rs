@@ -86,6 +86,7 @@ impl EpaxosServer {
     fn send_pre_accepts(&self, payload: &Payload) -> Vec<Payload> {
         let mut pre_accept_oks = Vec::new();
         for replica_id in self.quorum_members.iter() {
+            println!("Sending PreAccept to {:?}", replica_id);
             crossbeam_thread::scope(|s| {
                 s.spawn(|_| {
                     let pre_accept_ok = self
@@ -135,7 +136,7 @@ impl EpaxosServer {
                         .get(replica_id)
                         .unwrap()
                         .commit(grpc::RequestOptions::new(), payload.to_grpc());
-                    //println!("Sending Commit to replica {}", replica_id.0);
+                    println!("Sending Commit to replica {}", replica_id.0);
                 });
             })
             .unwrap();
