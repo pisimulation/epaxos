@@ -20,7 +20,7 @@ fn main() {
     };
     let mut write_reqs = Vec::new();
     write_reqs.push((write_req1.to_grpc(), JP));
-    //write_reqs.push((write_req2.to_grpc(), EU));
+    write_reqs.push((write_req2.to_grpc(), EU));
     write_reqs
         .par_iter_mut()
         .enumerate()
