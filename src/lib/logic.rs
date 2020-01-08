@@ -230,19 +230,6 @@ impl EpaxosLogic {
         deps1
     }
 
-    pub fn fast_quorum(&self) -> Vec<ReplicaId> {
-        let mut quorum = Vec::new();
-        for i in 1..FAST_QUORUM {
-            let mut quorum_member = (self.id.0 as i32 - i as i32).abs();
-            if quorum_member == self.id.0 as i32 {
-                println!("!!");
-                quorum_member = (self.id.0 as i32 - i as i32 - 1).abs();
-            }
-            quorum.push(ReplicaId(quorum_member as u32));
-        }
-        quorum
-    }
-
     pub fn pre_accept_(&mut self, pre_accept_req: PreAccept) -> PreAcceptOK {
         println!("=====PRE==ACCEPT========");
         let Payload {
