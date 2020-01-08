@@ -15,7 +15,7 @@ fn main() {
         value: 1,
     };
     let write_req2 = WriteRequest {
-        key: "pi".to_string(),
+        key: "shin".to_string(),
         value: 2,
     };
     let mut write_reqs = Vec::new();
