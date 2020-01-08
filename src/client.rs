@@ -6,7 +6,7 @@ extern crate sharedlib;
 use grpc::ClientStub;
 use rayon::prelude::*;
 use sharedlib::epaxos_grpc::*;
-use sharedlib::logic::{WriteRequest, EU, JP, REPLICA_PORT};
+use sharedlib::logic::{WriteRequest, EU, NORCA, REPLICA_PORT};
 use std::{sync::Arc, time::Instant};
 
 fn main() {
@@ -19,7 +19,7 @@ fn main() {
         value: 2,
     };
     let mut write_reqs = Vec::new();
-    write_reqs.push((write_req1.to_grpc(), JP));
+    write_reqs.push((write_req1.to_grpc(), NORCA));
     write_reqs.push((write_req2.to_grpc(), EU));
     write_reqs
         .par_iter_mut()
