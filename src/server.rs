@@ -189,6 +189,7 @@ impl EpaxosService for EpaxosServer {
         _o: grpc::RequestOptions,
         p: grpc_service::Payload,
     ) -> grpc::SingleResponse<grpc_service::Payload> {
+        println!("Received PreAccept");
         let mut epaxos_logic = self.epaxos_logic.lock().unwrap();
         let request = PreAccept(Payload::from_grpc(&p));
         let response = epaxos_logic.pre_accept_(request);
