@@ -23,10 +23,11 @@ struct EpaxosServer {
     store: Arc<Mutex<HashMap<String, i32>>>,
     epaxos_logic: Arc<Mutex<EpaxosLogic>>,
     replicas: HashMap<ReplicaId, EpaxosServiceClient>,
+    quorum_members: Vec<ReplicaId>,
 }
 
 impl EpaxosServer {
-    fn init(id: ReplicaId) -> EpaxosServer {
+    fn init(id: ReplicaId, quorum_members: Vec<ReplicaId>) -> EpaxosServer {
         let mut replicas = HashMap::new();
         println!("Initializing Replica {}", id.0);
         for i in 0..REPLICAS_NUM {
@@ -50,6 +51,7 @@ impl EpaxosServer {
             store: Arc::new(Mutex::new(HashMap::new())),
             epaxos_logic: Arc::new(Mutex::new(EpaxosLogic::init(id))),
             replicas: replicas,
+            quorum_members: quorum_members,
         }
     }
 
@@ -58,13 +60,12 @@ impl EpaxosServer {
         println!("Starting consensus");
         let mut epaxos_logic = self.epaxos_logic.lock().unwrap();
         let payload = epaxos_logic.lead_consensus(write_req.clone());
-        let fast_quorum_members = epaxos_logic.fast_quorum();
-        let pre_accept_oks = self.send_pre_accepts(&fast_quorum_members, &payload);
+        let pre_accept_oks = self.send_pre_accepts(&payload);
 
         match epaxos_logic.decide_path(pre_accept_oks, &payload) {
             Path::Fast(payload_) => {
                 // Send Commit message to F
-                self.send_commits(&fast_quorum_members, &payload_);
+                self.send_commits(&payload_);
                 epaxos_logic.committed(payload_);
                 return true;
             }
@@ -72,8 +73,8 @@ impl EpaxosServer {
                 // Start Paxos-Accept stage
                 // Send Accept message to F
                 epaxos_logic.accepted(payload_.clone());
-                if self.send_accepts(&fast_quorum_members, &payload_) >= SLOW_QUORUM {
-                    self.send_commits(&fast_quorum_members, &payload_);
+                if self.send_accepts(&payload_) >= SLOW_QUORUM {
+                    self.send_commits(&payload_);
                     epaxos_logic.committed(payload_);
                     return true;
                 }
@@ -82,9 +83,9 @@ impl EpaxosServer {
         }
     }
 
-    fn send_pre_accepts(&self, receivers: &Vec<ReplicaId>, payload: &Payload) -> Vec<Payload> {
+    fn send_pre_accepts(&self, payload: &Payload) -> Vec<Payload> {
         let mut pre_accept_oks = Vec::new();
-        for replica_id in receivers.iter() {
+        for replica_id in self.quorum_members.iter() {
             crossbeam_thread::scope(|s| {
                 s.spawn(|_| {
                     let pre_accept_ok = self
@@ -104,9 +105,9 @@ impl EpaxosServer {
         }
         pre_accept_oks
     }
-    fn send_accepts(&self, receivers: &Vec<ReplicaId>, payload: &Payload) -> usize {
+    fn send_accepts(&self, payload: &Payload) -> usize {
         let mut accept_ok_count: usize = 1;
-        for replica_id in receivers.iter() {
+        for replica_id in self.quorum_members.iter() {
             crossbeam_thread::scope(|s| {
                 s.spawn(|_| {
                     let accept_ok = self
@@ -126,8 +127,8 @@ impl EpaxosServer {
         }
         accept_ok_count
     }
-    fn send_commits(&self, receivers: &Vec<ReplicaId>, payload: &Payload) {
-        for replica_id in receivers.iter() {
+    fn send_commits(&self, payload: &Payload) {
+        for replica_id in self.quorum_members.iter() {
             crossbeam_thread::scope(|s| {
                 s.spawn(|_| {
                     self.replicas
@@ -220,9 +221,12 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let id: u32 = args[1].parse().unwrap();
+    let r1: u32 = args[2].parse().unwrap();
+    let r2: u32 = args[3].parse().unwrap();
     let mut server_builder1 = grpc::ServerBuilder::new_plain();
     server_builder1.add_service(EpaxosServiceServer::new_service_def(EpaxosServer::init(
         ReplicaId(id),
+        vec![ReplicaId(r1), ReplicaId(r2)],
     )));
     server_builder1.http.set_port(REPLICA_PORT);
     let server1 = server_builder1.build().expect("build");

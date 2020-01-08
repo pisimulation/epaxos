@@ -6,7 +6,7 @@ extern crate sharedlib;
 use grpc::ClientStub;
 use rayon::prelude::*;
 use sharedlib::epaxos_grpc::*;
-use sharedlib::logic::{WriteRequest, REPLICA_PORT, VA};
+use sharedlib::logic::{WriteRequest, OR, REPLICA_PORT};
 use std::{sync::Arc, time::Instant};
 
 fn main() {
@@ -17,7 +17,7 @@ fn main() {
     let mut write_reqs = vec![write_req1.to_grpc(); 10];
     write_reqs.par_iter_mut().enumerate().for_each(|(i, req)| {
         let grpc_client =
-            Arc::new(grpc::Client::new_plain(VA, REPLICA_PORT, Default::default()).unwrap());
+            Arc::new(grpc::Client::new_plain(OR, REPLICA_PORT, Default::default()).unwrap());
         let client = EpaxosServiceClient::with_client(grpc_client);
         let start = Instant::now();
         let res = client.write(grpc::RequestOptions::new(), req.clone());

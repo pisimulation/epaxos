@@ -3,7 +3,7 @@ extern crate protobuf;
 use std::{cmp, cmp::Ordering, collections::HashMap, fmt, time::Duration};
 
 pub const SLOW_QUORUM: usize = 3; // F + 1
-pub const FAST_QUORUM: usize = 4; // 2F
+pub const FAST_QUORUM: usize = 3; // F + floor(F + 1 / 2)
 pub const REPLICAS_NUM: usize = 5;
 pub const LOCALHOST: &str = "127.0.0.1";
 pub const VA: &str = "52.23.98.238";
@@ -232,16 +232,6 @@ impl EpaxosLogic {
         deps1.sort_by(sort_instances);
         deps1.dedup();
         deps1
-    }
-
-    pub fn fast_quorum(&self) -> Vec<ReplicaId> {
-        let mut quorum = Vec::new();
-        for i in 0..REPLICAS_NUM {
-            if i != self.id.0 as usize {
-                quorum.push(ReplicaId(i as u32));
-            }
-        }
-        quorum
     }
 
     pub fn pre_accept_(&mut self, pre_accept_req: PreAccept) -> PreAcceptOK {
